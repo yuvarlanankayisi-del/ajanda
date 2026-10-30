@@ -68,13 +68,24 @@ public class Scheduler {
     }
 
     static PendingIntent openApp(Context c, int rc) {
+        return openApp(c, rc, null, null);
+    }
+
+    static PendingIntent openApp(Context c, int rc, String tid, String k) {
         Intent i = new Intent(c, MainActivity.class);
         i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        if (tid != null && !tid.isEmpty()) { i.putExtra("tid", tid); i.putExtra("k", k); i.setAction("OPEN_" + rc); }
         return PendingIntent.getActivity(c, rc, i, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     static PendingIntent alarmIntent(Context c, int rc, String action, String title, String body) {
+        return alarmIntent(c, rc, action, title, body, null, null);
+    }
+
+    static PendingIntent alarmIntent(Context c, int rc, String action, String title, String body, String tid, String k) {
         Intent i = new Intent(c, AlarmReceiver.class);
+        if (tid != null) i.putExtra("tid", tid);
+        if (k != null) i.putExtra("k", k);
         i.setAction(action);
         i.putExtra("id", rc);
         if (title != null) i.putExtra("title", title);
@@ -121,7 +132,7 @@ public class Scheduler {
                     long at = it.optLong("at", 0);
                     if (at <= now) continue;
                     int rc = it.optInt("id", k + 1) % 700000;
-                    setAlarm(am, at, alarmIntent(c, rc, "REM", it.optString("title"), it.optString("body")));
+                    setAlarm(am, at, alarmIntent(c, rc, "REM", it.optString("title"), it.optString("body"), it.optString("tid", null), it.optString("k", null)));
                     ids.put(new JSONObject().put("rc", rc).put("a", "REM"));
                     count++;
                 }
@@ -229,6 +240,10 @@ public class Scheduler {
     }
 
     static void notifyNow(Context c, int id, String title, String body) {
+        notifyNow(c, id, title, body, null, null);
+    }
+
+    static void notifyNow(Context c, int id, String title, String body, String tid, String k) {
         if (!canNotify(c)) return;
         ensureChannels(c);
         NotificationManager nm = c.getSystemService(NotificationManager.class);
@@ -241,7 +256,7 @@ public class Scheduler {
                 .setAutoCancel(true)
                 .setColor(0xFF7A2843)
                 .setCategory(Notification.CATEGORY_REMINDER)
-                .setContentIntent(openApp(c, 100000 + (id % 100000)));
+                .setContentIntent(openApp(c, 100000 + (id % 100000), tid, k));
         nm.notify(10 + id, b.build());
     }
 }

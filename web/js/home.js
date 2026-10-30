@@ -70,7 +70,7 @@ Screens.home = {
     /* hatırlatıcılar */
     const rList = k => {
       const list = S.tasksOn(k);
-      if (!list.length) return `<div class="empty">Boş · eklemek için dokun</div>`;
+      if (!list.length) return `<button class="empty" data-a="openDay" data-k="${k}" style="background:none;border:none;text-align:left">Boş · eklemek için dokun</button>`;
       return list.slice(0, 3).map(t => {
         const d = S.isDone(t, k);
         return `<div class="rmd ${d ? 'done' : ''}"><button class="chk ${d ? 'on' : ''}" data-a="tgl" data-id="${t.id}" data-k="${k}" aria-label="Tamamla" style="margin-top:2px"></button><button class="t" data-a="editTask" data-id="${t.id}" style="background:none;border:none;padding:0;text-align:left;color:inherit"><b>${U.esc(t.title)}</b><small>${t.time || (t.kind === 'event' ? 'Tüm gün' : 'Saatsiz')}</small></button></div>`;
@@ -144,8 +144,8 @@ Screens.home = {
         <section class="card col" aria-label="Hatırlatıcılarım">
           <div class="ct">${ic('bell', 15, 1.8)}<h2>Hatırlatıcılarım</h2><button class="more" data-a="go" data-to="agenda">Tümü ›</button></div>
           <div class="g2" style="gap:6px;flex:1">
-            <div class="sub col" style="gap:7px"><div class="row" style="gap:4px"><span style="color:var(--gold);display:flex">${ic('sun', 13, 2)}</span><b style="font-size:11px;flex:1">Bugün</b><span class="badge">${open.length}</span></div>${rList(tk)}</div>
-            <div class="sub col" style="gap:7px"><div class="row" style="gap:4px"><span style="color:var(--lilac);display:flex">${ic('moon', 13, 2)}</span><b style="font-size:11px;flex:1">Yarın</b><span class="badge" style="background:rgba(201,180,224,.22)">${openT}</span></div>${rList(tmk)}</div>
+            <div class="sub col" style="gap:7px"><button class="row" data-a="openDay" data-k="${tk}" style="gap:4px;background:none;border:none;padding:0;color:inherit;min-height:24px"><span style="color:var(--gold);display:flex">${ic('sun', 13, 2)}</span><b style="font-size:11px;flex:1;text-align:left">Bugün</b><span class="badge">${open.length}</span></button>${rList(tk)}</div>
+            <div class="sub col" style="gap:7px"><button class="row" data-a="openDay" data-k="${tmk}" style="gap:4px;background:none;border:none;padding:0;color:inherit;min-height:24px"><span style="color:var(--lilac);display:flex">${ic('moon', 13, 2)}</span><b style="font-size:11px;flex:1;text-align:left">Yarın</b><span class="badge" style="background:rgba(201,180,224,.22)">${openT}</span></button>${rList(tmk)}</div>
           </div>
         </section>
         <div class="col">

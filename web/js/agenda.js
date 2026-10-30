@@ -322,3 +322,34 @@ const CatSheet = {
     });
   }
 };
+
+/* ---------- bildirimden açılan görev detayı ---------- */
+const TaskDetail = {
+  open(tid, k) {
+    const t = S.db.tasks.find(x => x.id === tid);
+    if (!t) { U.toast('Bu kayıt artık yok'); return; }
+    k = k || t.date;
+    const c = S.cat(t.cat), d = S.isDone(t, k);
+    const rep = REPEATS.find(r => r.v === (t.repeat || 'none'));
+    const rem = REMINDS.find(r => r.v === t.remind);
+    const rec = App.sheet(`
+      <div class="row" style="gap:10px"><span class="cdot" style="width:12px;height:12px;background:${c.color}"></span><span class="lbl sp">${U.esc(c.name)}${t.kind === 'event' ? ' · Etkinlik' : ''}</span>
+        <button class="icbtn" data-a="tdEdit" aria-label="Düzenle">${ic('edit', 19)}</button></div>
+      <h3 style="font-size:30px;line-height:1.15">${U.esc(t.title)}</h3>
+      <div class="card big col" style="gap:10px">
+        <div class="row">${ic('cal', 18)}<span>${U.fmt(k, 'long')} · ${U.rel(k)}</span></div>
+        ${t.time ? `<div class="row">${ic('clock', 18)}<span>${t.time}</span></div>` : ''}
+        ${t.repeat && t.repeat !== 'none' ? `<div class="row">${ic('repeat', 18)}<span>${rep ? rep.l : ''}</span></div>` : ''}
+        ${t.remind != null ? `<div class="row">${ic('bell', 18)}<span>${rem ? rem.l : ''}</span></div>` : ''}
+        ${t.note ? `<p style="margin:4px 0 0;line-height:1.6;white-space:pre-line">${U.esc(t.note)}</p>` : ''}
+      </div>
+      ${d ? '<p class="mu" style="margin:0;text-align:center">Bu iş zaten tamamlandı.</p>' : ''}
+      <div class="row"><button class="btn ghost sp" data-a="tdPost">${ic('clock', 18)} Ertele</button><button class="btn sp" data-a="tdOk">${ic('check', 18, 2.4)} Tamam</button></div>`, {
+      acts: {
+        tdOk: () => { if (!S.isDone(t, k)) S.toggle(t, k); App.closeSheet(rec); App.go('home', {}, { reset: true }); U.toast('Tamamlandı'); },
+        tdPost: () => { App.closeSheet(rec); PostponeSheet.open(t, k); },
+        tdEdit: () => { App.closeSheet(rec); TaskSheet.open(t); }
+      }
+    });
+  }
+};

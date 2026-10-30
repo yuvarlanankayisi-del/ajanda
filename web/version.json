@@ -1,9 +1,10 @@
 {
- "version": 1,
+ "version": 2,
  "date": "30.10.2026",
- "notes": "İlk sürüm",
+ "notes": "NNahiC adı ve logosu, görev silme düzeltmesi, bildirimden görev detayı, Bugün/Yarın kısayolu",
  "files": [
   "css/app.css",
+  "img/logo.jpg",
   "index.html",
   "js/agenda.js",
   "js/app.js",

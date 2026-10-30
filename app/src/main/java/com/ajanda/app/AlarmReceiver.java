@@ -11,7 +11,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         if ("REM".equals(a)) {
             String title = i.getStringExtra("title");
             String body = i.getStringExtra("body");
-            Scheduler.notifyNow(c, i.getIntExtra("id", 0), title == null ? "Hatırlatma" : title, body == null ? "" : body);
+            Scheduler.notifyNow(c, i.getIntExtra("id", 0), title == null ? "Hatırlatma" : title, body == null ? "" : body, i.getStringExtra("tid"), i.getStringExtra("k"));
             Scheduler.refreshOngoing(c);
         } else if ("MID".equals(a)) {
             Scheduler.apply(c);

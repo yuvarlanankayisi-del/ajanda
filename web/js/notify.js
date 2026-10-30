@@ -33,7 +33,7 @@ const Notify = {
         const at = base.getTime() - t.remind * 60000;
         if (at <= now) continue;
         const when = t.time ? (t.remind === 0 ? 'Şimdi · ' + t.time : U.rel(k) + ' ' + t.time) : U.rel(k);
-        items.push({ id: hashId(t.id + k), at, title: t.title || 'Hatırlatma', body: when + (t.note ? ' · ' + t.note.slice(0, 80) : '') });
+        items.push({ id: hashId(t.id + k), at, title: t.title || 'Hatırlatma', body: when + (t.note ? ' · ' + t.note.slice(0, 80) : ''), tid: t.id, k });
       }
       for (const h of S.db.habits) {
         if (!h.remind || h.archived || S.habitDone(h, k)) continue;

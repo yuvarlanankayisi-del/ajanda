@@ -19,6 +19,7 @@ const App = {
     window.__back = App.backKey;
     window.__pause = () => { S.saveNow(); Sync.flush(); App.pausedAt = Date.now(); };
     window.__resume = App.resume;
+    window.__checkOpen = App.checkOpen;
 
     if (!S.set.onboarded) { App.onboarding(); return; }
     App.start();
@@ -29,12 +30,22 @@ const App = {
     App.go(st, {}, { reset: true });
     if (S.set.lock && S.set.lock.on) Lock.show();
     App.lastDay = U.today();
+    setTimeout(App.checkOpen, 350);
     setTimeout(() => {
       Notify.push();
       const last = S.sync.updChecked || 0;
       if (Date.now() - last > 6 * 3600000) Upd.check();
       if (Sync.ready() && Date.now() - (S.sync.last || 0) > 30 * 60000) Sync.push();
     }, 1500);
+  },
+
+  /* bildirime dokunulduysa ilgili görevi aç */
+  checkOpen() {
+    let p = null;
+    try { p = N && N.takePending(); } catch (e) { }
+    if (!p) return;
+    if (Lock.on) { App.afterLock = p; return; }
+    try { const o = JSON.parse(p); TaskDetail.open(o.tid, o.k); } catch (e) { }
   },
 
   resume() {
@@ -178,8 +189,9 @@ const App = {
   },
   confirm(msg, yes, danger) {
     return new Promise(res => {
+      let answered = false;
       const rec = App.sheet(`<h3>${U.esc(msg)}</h3><div class="row"><button class="btn ghost sp" data-a="cNo">Vazgeç</button><button class="btn ${danger ? 'danger' : ''} sp" data-a="cYes">${U.esc(yes || 'Evet')}</button></div>`,
-        { acts: { cNo: () => { App.closeSheet(rec); res(false); }, cYes: () => { App.closeSheet(rec); res(true); } }, onClose: () => res(false) });
+        { acts: { cNo: () => { answered = true; App.closeSheet(rec); res(false); }, cYes: () => { answered = true; App.closeSheet(rec); res(true); } }, onClose: () => { if (!answered) res(false); } });
     });
   },
   prompt(title, val, ph) {
@@ -199,7 +211,7 @@ const App = {
     const el = document.getElementById('screen');
     el.classList.add('nonav');
     el.innerHTML = `<div class="page-in" style="min-height:100%;display:flex;flex-direction:column;justify-content:center;padding:30px 22px;gap:22px">
-      <div style="color:var(--ac)">${ic('spark', 40, 1.4)}</div>
+      <img src="img/logo.jpg" alt="" style="width:120px;height:120px;border-radius:30px;box-shadow:0 12px 40px rgba(0,0,0,.5)">
       <h1 class="serif" style="font-size:38px;line-height:1.05">Hoş geldin.</h1>
       <p class="mu" style="margin:0;font-size:15px;line-height:1.6">Burası senin dijital ajandan: planların, notların, günlüğün ve alışkanlıkların tek yerde.</p>
       <div class="field"><label>Sana nasıl seslenelim?</label><input class="inp" id="obName" placeholder="Adın" autocomplete="off"></div>
@@ -272,7 +284,7 @@ const Lock = {
   draw(shake) {
     const d = document.getElementById('lock'); if (!d) return;
     const keys = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-    d.innerHTML = `<div style="color:var(--ac)">${ic('lock', 30, 1.5)}</div><h1>${U.esc(S.set.name || 'Merhaba')}</h1>
+    d.innerHTML = `<img src="img/logo.jpg" alt="" style="width:76px;height:76px;border-radius:20px"><h1>${U.esc(S.set.name || 'Merhaba')}</h1>
       <div class="pdots ${shake ? 'shake' : ''}">${[0, 1, 2, 3].map(i => `<i class="${i < Lock.entry.length ? 'on' : ''}"></i>`).join('')}</div>
       <div class="pinpad">${keys.map(k => `<button data-k="${k}">${k}</button>`).join('')}
       <button class="clear" data-k="bio">${S.set.lock.bio ? ic('fp', 28, 1.5) : ''}</button><button data-k="0">0</button><button class="clear" data-k="del">Sil</button></div>`;
@@ -296,6 +308,7 @@ const Lock = {
   hide() {
     Lock.on = false;
     const d = document.getElementById('lock'); if (d) d.remove();
+    if (App.afterLock) { const p = App.afterLock; App.afterLock = null; try { const o = JSON.parse(p); TaskDetail.open(o.tid, o.k); } catch (e) { } }
   }
 };
 

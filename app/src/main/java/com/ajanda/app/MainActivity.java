@@ -47,6 +47,7 @@ public class MainActivity extends Activity {
     WebView web;
     ValueCallback<Uri[]> fileCallback;
     boolean useUpdatedWeb = false;
+    String pendingOpen = null;
 
     @Override
     protected void onCreate(Bundle b) {
@@ -104,7 +105,26 @@ public class MainActivity extends Activity {
             }
         });
         setContentView(web);
+        readOpenIntent(getIntent());
         web.loadUrl(BASE + "index.html");
+    }
+
+    void readOpenIntent(Intent i) {
+        if (i == null) return;
+        String tid = i.getStringExtra("tid");
+        if (tid == null) return;
+        try {
+            pendingOpen = new JSONObject().put("tid", tid).put("k", i.getStringExtra("k")).toString();
+        } catch (Exception ignored) { }
+        i.removeExtra("tid");
+    }
+
+    @Override
+    protected void onNewIntent(Intent i) {
+        super.onNewIntent(i);
+        setIntent(i);
+        readOpenIntent(i);
+        if (pendingOpen != null) js("window.__checkOpen&&window.__checkOpen()");
     }
 
     /* ---------- web dosyalarını sunma ---------- */
@@ -363,6 +383,13 @@ public class MainActivity extends Activity {
         public void webReset() {
             deleteRecursive(new File(getFilesDir(), "web"));
             runOnUiThread(() -> { chooseWebRoot(); web.loadUrl(BASE + "index.html"); });
+        }
+
+        @JavascriptInterface
+        public String takePending() {
+            String p = pendingOpen;
+            pendingOpen = null;
+            return p;
         }
 
         @JavascriptInterface
