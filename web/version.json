@@ -1,7 +1,7 @@
 {
- "version": 3,
+ "version": 4,
  "date": "30.10.2026",
- "notes": "Hatırlatıcı düzeltmesi: saat girince hatırlatma kendiliğinden açılır",
+ "notes": "Hatırlatıcılar artık eklendiği anda telefona kurulur; otomatik yedekleme düzeltildi",
  "files": [
   "css/app.css",
   "img/logo.jpg",

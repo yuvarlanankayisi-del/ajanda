@@ -105,8 +105,8 @@ const S = {
     S._st = setTimeout(S.saveNow, 400);
     S.changed = Date.now();
     if (!(opts && opts.quiet)) S.listeners.forEach(fn => { try { fn(); } catch (e) { console.error(e); } });
-    if (window.Notify) Notify.later();
-    if (window.Sync) Sync.later();
+    if (typeof Notify !== 'undefined') Notify.later();
+    if (typeof Sync !== 'undefined') Sync.later();
   },
   on(fn) { S.listeners.push(fn); },
 

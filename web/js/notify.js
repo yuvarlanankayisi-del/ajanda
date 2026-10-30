@@ -17,7 +17,7 @@ function hashId(s) {
 }
 
 const Notify = {
-  later() { clearTimeout(Notify._t); Notify._t = setTimeout(Notify.push, 1500); },
+  later() { clearTimeout(Notify._t); Notify._t = setTimeout(Notify.push, 800); },
 
   build() {
     const items = [];

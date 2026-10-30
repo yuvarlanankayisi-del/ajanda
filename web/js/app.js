@@ -17,7 +17,7 @@ const App = {
     S.on(() => { if (!App.sheets.length || App.sheets[App.sheets.length - 1].live) App.refreshSoon(); });
 
     window.__back = App.backKey;
-    window.__pause = () => { S.saveNow(); Sync.flush(); App.pausedAt = Date.now(); };
+    window.__pause = () => { S.saveNow(); Notify.push(); Sync.flush(); App.pausedAt = Date.now(); };
     window.__resume = App.resume;
     window.__checkOpen = App.checkOpen;
 

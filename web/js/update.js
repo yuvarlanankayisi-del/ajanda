@@ -19,7 +19,7 @@ const Upd = {
       S.sync.updChecked = Date.now(); S.saveSync();
       const has = Upd.remote.version > Upd.local.version;
       if (loud) U.toast(has ? 'Yeni güncelleme var' : 'Uygulama güncel');
-      if (window.App) App.updateBadge(has);
+      if (typeof App !== 'undefined') App.updateBadge(has);
       return has;
     } catch (e) {
       if (loud) U.toast('Güncelleme denetlenemedi (internet?)');
