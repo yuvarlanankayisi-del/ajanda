@@ -1,7 +1,7 @@
 {
- "version": 2,
+ "version": 3,
  "date": "30.10.2026",
- "notes": "NNahiC adı ve logosu, görev silme düzeltmesi, bildirimden görev detayı, Bugün/Yarın kısayolu",
+ "notes": "Hatırlatıcı düzeltmesi: saat girince hatırlatma kendiliğinden açılır",
  "files": [
   "css/app.css",
   "img/logo.jpg",

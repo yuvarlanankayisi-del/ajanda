@@ -52,6 +52,12 @@ const S = {
     for (const k of Object.keys(f)) if (d[k] === undefined) d[k] = f[k];
     for (const k of Object.keys(f.settings)) if (d.settings[k] === undefined) d.settings[k] = f.settings[k];
     if (!d.settings.categories || !d.settings.categories.length) d.settings.categories = DEFAULT_CATS.slice();
+    /* saat girilmiş ama hatırlatması kapalı kalmış görevlere tam zamanında hatırlatma aç (bir kerelik) */
+    if (!d.settings.migRemind) {
+      const tk = U.today();
+      for (const t of d.tasks) if (t.time && t.remind == null && (t.date >= tk || (t.repeat && t.repeat !== 'none'))) { t.remind = 0; t.updated = Date.now(); }
+      d.settings.migRemind = 1; S.dirty = true;
+    }
   },
 
   latestBackup() {

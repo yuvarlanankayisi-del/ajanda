@@ -247,7 +247,7 @@ const TaskSheet = {
       <div class="opts"><button class="${f.kind === 'task' ? 'on' : ''}" data-a="tsKind" data-v="task">Görev</button><button class="${f.kind === 'event' ? 'on' : ''}" data-a="tsKind" data-v="event">Etkinlik / Hatırlatıcı</button></div>
       <div class="g2" style="gap:10px">
         <div class="field"><label>Tarih</label><input type="date" class="inp" id="tsDate" value="${f.date || ''}"></div>
-        <div class="field"><label>Saat</label><div class="row" style="gap:4px"><input type="time" class="inp" id="tsTime" value="${f.time || ''}" style="flex:1">${f.time ? `<button class="icbtn" data-a="tsNoTime" aria-label="Saati kaldır" style="width:36px">${ic('x', 16)}</button>` : ''}</div></div>
+        <div class="field"><label>Saat</label><div class="row" style="gap:4px"><input type="time" class="inp" id="tsTime" data-ch="tsTimeCh" value="${f.time || ''}" style="flex:1">${f.time ? `<button class="icbtn" data-a="tsNoTime" aria-label="Saati kaldır" style="width:36px">${ic('x', 16)}</button>` : ''}</div></div>
       </div>
       <div class="field"><label>Hatırlatma</label><div class="opts">${REMINDS.map(r => `<button class="${f.remind === r.v ? 'on' : ''}" data-a="tsRem" data-v="${r.v}">${r.l}</button>`).join('')}</div>
         ${!f.time && f.remind != null ? '<small class="mu">Saat seçilmediği için hatırlatma sabah 09:00\'a göre yapılır.</small>' : ''}</div>
@@ -265,9 +265,10 @@ const TaskSheet = {
       mount: sh => { if (isNew) setTimeout(() => sh.querySelector('#tsTitle').focus(), 300); },
       acts: {
         tsKind: b => { f.kind = b.dataset.v; if (f.kind === 'event' && f.remind == null) f.remind = 0; redraw(); },
-        tsRem: b => { f.remind = b.dataset.v === 'null' ? null : +b.dataset.v; redraw(); },
+        tsRem: b => { f.remind = b.dataset.v === 'null' ? null : +b.dataset.v; f._remTouched = true; redraw(); },
         tsRep: b => { f.repeat = b.dataset.v; redraw(); },
         tsCat: b => { f.cat = b.dataset.v; redraw(); },
+        tsTimeCh: () => { if (rec.sh.querySelector('#tsTime').value && f.remind == null && !f._remTouched) { f.remind = 0; redraw(); } },
         tsNoTime: () => { rec.sh.querySelector('#tsTime').value = ''; redraw(); },
         tsNewCat: async () => { grab(); const c = await CatSheet.create(); if (c) f.cat = c.id; App.setSheet(rec, draw()); },
         tsPost: () => { App.closeSheet(rec); const k = S.occurs(task, App.agendaDate) ? App.agendaDate : task.date; PostponeSheet.open(task, k); },

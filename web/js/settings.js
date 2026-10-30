@@ -33,6 +33,8 @@ Screens.settings = {
         ${N ? row('notifPerm', 'bell', 'Bildirim izni', notifOk ? 'Açık' : 'Kapalı · açmak için dokun', notifOk ? `<span class="ac">${ic('check', 18, 2.4)}</span>` : undefined) : ''}
         <div class="r">${ic('note', 20)}<span class="sp">Kalıcı günlük özet<small>Bildirim ekranında hep duran satır: kalan işler ve sıradaki saatli iş</small></span>${sw('tglOngoing', s.ongoing)}</div>
         ${N ? row('battery', 'flame', 'Pil kısıtlaması', batt ? 'Açık · hatırlatıcılar gecikebilir, kapatmak için dokun' : 'Kapalı, hatırlatıcılar zamanında gelir', batt ? undefined : `<span class="ac">${ic('check', 18, 2.4)}</span>`) : ''}
+        ${N ? row('autostart', 'update', 'Otomatik başlatma (Xiaomi, Redmi, Oppo…)', 'Uygulama kapalıyken hatırlatıcı gelmiyorsa: açılan sayfada "Otomatik başlatma"yı aç, Pil tasarrufu → "Kısıtlama yok" seç') : ''}
+        ${(() => { const it = Notify.build().items.filter(x => x.id !== 599999); const nx = it[0]; return `<div class="r">${ic('clock', 20)}<span class="sp">Planlanan hatırlatıcılar: ${it.length}<small>${nx ? 'Sıradaki: ' + U.esc(nx.title) + ' · ' + new Date(nx.at).toLocaleString('tr-TR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Hatırlatması açık yaklaşan görev yok'}</small></span></div>`; })()}
         ${N ? row('testNotif', 'spark', 'Deneme bildirimi gönder', '') : ''}</div>
 
       <div class="lbl">Gizlilik</div>
@@ -94,6 +96,7 @@ Screens.settings = {
     async notifPerm() { if (Notify.allowed()) { N.openAppSettings(); return; } await Notify.ask(); App.forceRefresh(); },
     tglOngoing() { S.set.ongoing = !S.set.ongoing; S.set.updated = Date.now(); S.touch(); Notify.push(); if (S.set.ongoing && N && !Notify.allowed()) Notify.ask(); },
     battery() { N.openBatterySettings(); },
+    autostart() { N.openAppSettings(); },
     testNotif() { if (!Notify.allowed()) { Notify.ask(); return; } N.testNotification('Deneme bildirimi', 'Bildirimler çalışıyor. Hatırlatıcıların zamanında gelecek.'); },
     tglLock() { if (S.set.lock.on) { S.set.lock = { on: false, pin: null, bio: false }; S.touch(); U.toast('Kilit kapatıldı'); } else PinSetup.open(); },
     tglBio() { S.set.lock.bio = !S.set.lock.bio; S.touch(); },
