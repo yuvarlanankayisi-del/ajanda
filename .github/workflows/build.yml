@@ -1,0 +1,37 @@
+name: APK üret
+on:
+  push:
+    paths: ['app/**', 'web/**', 'build.gradle', 'settings.gradle', '.github/workflows/build.yml']
+  workflow_dispatch: {}
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - name: Android SDK
+        uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: '8.7' }
+      - name: Web dosyalarını APK içine kopyala
+        run: |
+          rm -rf app/src/main/assets/web
+          mkdir -p app/src/main/assets
+          cp -r web app/src/main/assets/web
+      - name: Derle
+        run: gradle assembleDebug --no-daemon 2>&1 | tee build.log; test ${PIPESTATUS[0]} -eq 0
+      - uses: actions/upload-artifact@v4
+        with: { name: ajanda-apk, path: app/build/outputs/apk/debug/app-debug.apk }
+      - name: Derleme sonucunu kaydet
+        if: always()
+        run: |
+          mkdir -p /tmp/ci && cp build.log /tmp/ci/ 2>/dev/null || echo "log yok" > /tmp/ci/build.log
+          echo "${{ job.status }} run=${{ github.run_number }} sha=${{ github.sha }}" > /tmp/ci/status.txt
+          if [ -f app/build/outputs/apk/debug/app-debug.apk ]; then cp app/build/outputs/apk/debug/app-debug.apk /tmp/ci/ajanda.apk; fi
+          cd /tmp/ci && git init -q && git checkout -q -b ci-sonuc
+          git config user.email ci@ajanda && git config user.name ci
+          git add -A && git commit -qm "derleme ${{ github.run_number }}"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" ci-sonuc
