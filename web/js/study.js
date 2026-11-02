@@ -151,7 +151,7 @@ Screens.course = {
         ${plan.length ? plan.map(t => `<button class="blk" data-a="sEdit" data-id="${t.id}" style="background:color-mix(in srgb,${c.color} 15%,transparent)"><b>${(REPEATS.find(r => r.v === t.repeat) || {}).l} ${t.repeat === 'weekly' ? U.days[U.dow(t.date)] : ''} · ${t.time || 'saatsiz'}</b><small>${U.esc(t.title)}</small></button>`).join('') : '<small class="mu">Bu ders için düzenli çalışma saati yok.</small>'}</section>
 
       <section class="card big col" style="gap:8px"><h2 class="h2s">Notlar</h2>
-        <textarea class="bare grow" rows="2" data-in="cNote" placeholder="Formüller, hatırlatmalar, öğretmenin söyledikleri…" style="font-size:14.5px;line-height:1.6">${U.esc(c.note || '')}</textarea></section>
+        <textarea class="bare grow" rows="2" data-in="cNote" data-id="${c.id}" placeholder="Formüller, hatırlatmalar, öğretmenin söyledikleri…" style="font-size:14.5px;line-height:1.6">${U.esc(c.note || '')}</textarea></section>
       <button class="btn soft" data-a="cFocus">${ic('timer', 18)} Bu ders için odak sayacını başlat</button>
     </div>`;
   },
@@ -171,7 +171,7 @@ Screens.course = {
     cAddHw() { StudyAdd.pick('hw', App.cur.params.id); },
     cAddExam() { StudyAdd.pick('exam', App.cur.params.id); },
     cAddPlan() { StudyAdd.pick('plan', App.cur.params.id); },
-    cNote: U.debounce(t => { const c = Study.course(App.cur.params.id); if (c) { c.note = t.value; c.updated = Date.now(); S.touch({ quiet: true }); } }, 500),
+    cNote: U.debounce(t => { const c = Study.course(t.dataset.id); if (c) { c.note = t.value; c.updated = Date.now(); S.touch({ quiet: true }); } }, 500),
     cFocus() { S.sync.pomoCourse = App.cur.params.id; S.saveSync(); App.go('pomodoro'); },
     sTgl(t) { const x = S.db.tasks.find(y => y.id === t.dataset.id); if (x) { S.toggle(x, x.date); App.forceRefresh(); } },
     sEdit(t) { const x = S.db.tasks.find(y => y.id === t.dataset.id); if (x) TaskSheet.open(x); }

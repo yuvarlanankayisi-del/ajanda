@@ -34,13 +34,13 @@ Screens.journal = {
           <span style="width:${d.mood === m.v ? 42 : 34}px;height:${d.mood === m.v ? 42 : 34}px;border-radius:50%;background:${m.c};transition:all .2s"></span>${m.l}</button>`).join('')}</div></section>
 
       <section class="moment"><span class="lbl" style="color:var(--acTx);opacity:.85">Günün en güzel olayı</span>
-        <textarea class="bare grow" rows="1" data-in="jField" data-f="best" placeholder="Bugün seni ne gülümsetti?">${U.esc(d.best || '')}</textarea></section>
+        <textarea class="bare grow" rows="1" data-in="jField" data-f="best" data-k="${k}" placeholder="Bugün seni ne gülümsetti?">${U.esc(d.best || '')}</textarea></section>
 
       <section class="card big col" style="gap:10px"><h2 class="h2s">Şükür ettiğim 3 şey</h2>
-        ${[0, 1, 2].map(i => `<div class="numl"><span>${i + 1}</span><textarea class="bare grow" rows="1" data-in="jGr" data-i="${i}" placeholder="…" style="font-size:14.5px;line-height:1.5">${U.esc(gr[i] || '')}</textarea></div>`).join('')}</section>
+        ${[0, 1, 2].map(i => `<div class="numl"><span>${i + 1}</span><textarea class="bare grow" rows="1" data-in="jGr" data-i="${i}" data-k="${k}" placeholder="…" style="font-size:14.5px;line-height:1.5">${U.esc(gr[i] || '')}</textarea></div>`).join('')}</section>
 
       <section class="card big col" style="gap:10px"><h2 class="h2s">Sevgili günlük,</h2>
-        <textarea class="bare grow" rows="5" data-in="jField" data-f="journal" placeholder="Bugün neler oldu, neler düşündün?" style="font-size:15.5px;line-height:1.7;font-family:var(--serif);font-size:18px">${U.esc(d.journal || '')}</textarea>
+        <textarea class="bare grow" rows="5" data-in="jField" data-f="journal" data-k="${k}" placeholder="Bugün neler oldu, neler düşündün?" style="font-size:15.5px;line-height:1.7;font-family:var(--serif);font-size:18px">${U.esc(d.journal || '')}</textarea>
         <div class="photos">${(d.photos || []).map(id => `<button class="ph" data-a="jPhoto" data-id="${id}" style="background-image:url('${S.photoUrl(id)}')"></button>`).join('')}
           <button class="add" data-a="jAddPhoto">${ic('image', 22, 1.5)}Fotoğraf</button></div></section>
 
@@ -62,8 +62,8 @@ Screens.journal = {
     jShift(t) { const p = App.cur.entry.params; const nk = U.addDays(p.k, +t.dataset.n); if (nk > U.today()) return; p.k = nk; App.forceRefresh(); },
     jDay(t) { App.cur.entry.params.k = t.dataset.k; App.forceRefresh(); document.getElementById('screen').scrollTop = 0; },
     jMood(t) { const k = App.cur.params.k, v = +t.dataset.v; S.setDay(k, 'mood', S.day(k).mood === v ? null : v); App.forceRefresh(); },
-    jField: U.debounce(t => { S.setDay(App.cur.params.k, t.dataset.f, t.value); }, 500),
-    jGr: U.debounce(t => { const k = App.cur.params.k; const a = (S.day(k).gratitude || ['', '', '']).slice(); a[+t.dataset.i] = t.value; S.setDay(k, 'gratitude', a); }, 500),
+    jField: U.debounce(t => { S.setDay(t.dataset.k, t.dataset.f, t.value); }, 400),
+    jGr: U.debounce(t => { const k = t.dataset.k; const a = (S.day(k).gratitude || ['', '', '']).slice(); a[+t.dataset.i] = t.value; S.setDay(k, 'gratitude', a); }, 500),
     async jAddPhoto() { const k = App.cur.params.k; const ids = await S.addPhotos(true); if (ids.length) { S.setDay(k, 'photos', (S.day(k).photos || []).concat(ids)); App.forceRefresh(); } },
     jPhoto(t) { const k = App.cur.params.k; PhotoView.open(t.dataset.id, () => { S.setDay(k, 'photos', (S.day(k).photos || []).filter(x => x !== t.dataset.id)); App.forceRefresh(); }); }
   }

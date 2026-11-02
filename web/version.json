@@ -1,7 +1,7 @@
 {
- "version": 16,
+ "version": 17,
  "date": "02.11.2026",
- "notes": "Defter sayfası: yazılanlar kaybolmuyor, Kaydet düğmesi, tek ekrana sığıyor, gerçekçi siyam kedisi",
+ "notes": "Yazılar her bölümde doğru yere kaydedilir",
  "files": [
   "css/app.css",
   "img/cat.png",

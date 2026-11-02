@@ -110,7 +110,7 @@ Screens.cycle = {
       <section class="card big col" style="gap:12px"><h2 class="h2s">${sel === tk ? 'Bugün' : U.fmt(sel, 'long')}</h2>
         ${Cyc.inPeriod(sel) ? `<div class="field"><label>Akış</label><div class="opts">${FLOWS.map(f => `<button class="${lg.flow === f.v ? 'on' : ''}" data-a="cyFlow" data-v="${f.v}">${f.l}</button>`).join('')}</div></div>` : ''}
         <div class="field"><label>Belirtiler</label><div class="opts">${SYMPTOMS.map(x => `<button class="${(lg.symptoms || []).includes(x) ? 'on' : ''}" data-a="cySym" data-v="${x}">${x}</button>`).join('')}</div></div>
-        <div class="field"><label>Not</label><textarea class="inp grow" rows="1" data-in="cyNote" placeholder="İsteğe bağlı" style="min-height:0">${U.esc(lg.note || '')}</textarea></div>
+        <div class="field"><label>Not</label><textarea class="inp grow" rows="1" data-in="cyNote" data-k="${sel}" placeholder="İsteğe bağlı" style="min-height:0">${U.esc(lg.note || '')}</textarea></div>
         ${!Cyc.inPeriod(sel) && sel <= tk ? `<button class="btn ghost sm" data-a="cyMark" style="align-self:flex-start">Bu günü regl olarak işaretle</button>` : ''}
       </section>
 
@@ -134,7 +134,7 @@ Screens.cycle = {
     async cyDel(t) { if (await App.confirm('Bu kayıt silinsin mi?', 'Sil', true)) { const c = Cyc.get(); c.periods = c.periods.filter(p => p.id !== t.dataset.id); Cyc.save(); App.forceRefresh(); } },
     cyFlow(t) { const c = Cyc.get(), k = App.cur.params.k; const l = c.logs[k] = c.logs[k] || {}; l.flow = l.flow === +t.dataset.v ? null : +t.dataset.v; Cyc.save(); App.forceRefresh(); },
     cySym(t) { const c = Cyc.get(), k = App.cur.params.k; const l = c.logs[k] = c.logs[k] || {}; l.symptoms = l.symptoms || []; const v = t.dataset.v; l.symptoms = l.symptoms.includes(v) ? l.symptoms.filter(x => x !== v) : l.symptoms.concat(v); Cyc.save(); App.forceRefresh(); },
-    cyNote: U.debounce(t => { const c = Cyc.get(), k = App.cur.params.k; const l = c.logs[k] = c.logs[k] || {}; l.note = t.value; c.updated = Date.now(); S.touch({ quiet: true }); }, 500),
+    cyNote: U.debounce(t => { const c = Cyc.get(), k = t.dataset.k; const l = c.logs[k] = c.logs[k] || {}; l.note = t.value; c.updated = Date.now(); S.touch({ quiet: true }); }, 500),
     cySet() {
       const c = Cyc.get();
       const rec = App.sheet(`<h3>Döngüm ayarları</h3>

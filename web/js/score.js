@@ -151,15 +151,15 @@ Screens.score = {
       <section class="card big col" style="gap:8px"><h2 class="h2s">Son 6 ay</h2>${Score.line(hist.map(h => h.v), hist.map(h => U.monthsS[+h.y.slice(5) - 1]))}</section>
 
       <section class="card big col" style="gap:10px"><h2 class="h2s">Ay sonu notlarım</h2>
-        <span class="lbl">Bu ay iyi giden şeyler</span><textarea class="bare grow" rows="2" data-in="scTxt" data-f="good" placeholder="…" style="font-size:14.5px;line-height:1.6">${U.esc(m.good || '')}</textarea>
-        <span class="lbl">Geliştirmek istediklerim</span><textarea class="bare grow" rows="2" data-in="scTxt" data-f="improve" placeholder="…" style="font-size:14.5px;line-height:1.6">${U.esc(m.improve || '')}</textarea>
-        <span class="lbl">Gelecek ay için</span><textarea class="bare grow" rows="2" data-in="scTxt" data-f="next" placeholder="…" style="font-size:14.5px;line-height:1.6">${U.esc(m.next || '')}</textarea></section>
+        <span class="lbl">Bu ay iyi giden şeyler</span><textarea class="bare grow" rows="2" data-in="scTxt" data-f="good" data-ym="${ym}" placeholder="…" style="font-size:14.5px;line-height:1.6">${U.esc(m.good || '')}</textarea>
+        <span class="lbl">Geliştirmek istediklerim</span><textarea class="bare grow" rows="2" data-in="scTxt" data-f="improve" data-ym="${ym}" placeholder="…" style="font-size:14.5px;line-height:1.6">${U.esc(m.improve || '')}</textarea>
+        <span class="lbl">Gelecek ay için</span><textarea class="bare grow" rows="2" data-in="scTxt" data-f="next" data-ym="${ym}" placeholder="…" style="font-size:14.5px;line-height:1.6">${U.esc(m.next || '')}</textarea></section>
     </div>`;
   },
   mount(el) { App.growAll(el); },
   acts: {
     scM(t) { const p = App.cur.entry.params; const n = Score.ymShift(p.ym, +t.dataset.n); if (n > Score.ym()) return; p.ym = n; App.forceRefresh(); },
-    scTxt: U.debounce(t => { const ym = App.cur.params.ym; const m = S.db.months[ym] = S.db.months[ym] || {}; m[t.dataset.f] = t.value; m.updated = Date.now(); S.touch({ quiet: true }); }, 500),
+    scTxt: U.debounce(t => { const ym = t.dataset.ym; const m = S.db.months[ym] = S.db.months[ym] || {}; m[t.dataset.f] = t.value; m.updated = Date.now(); S.touch({ quiet: true }); }, 500),
     scSelf() {
       const ym = App.cur.params.ym; const m = S.db.months[ym] || {}; const self = Object.assign({}, m.self || {}); const au = Score.auto(ym).r;
       const rec = App.sheet(`<h3>${Score.ymLabel(ym)} · kendi puanın</h3><p class="mu" style="margin:0;font-size:13px">Her alana 0-100 arası puan ver. Boş bırakmak için en sola çek.</p>
