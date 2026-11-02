@@ -1,7 +1,7 @@
 {
- "version": 4,
- "date": "30.10.2026",
- "notes": "Hatırlatıcılar artık eklendiği anda telefona kurulur; otomatik yedekleme düzeltildi",
+ "version": 5,
+ "date": "02.11.2026",
+ "notes": "Notlarda fotoğraf ve sticker'lar küçüldü; basılı tutup sürükle, köşeden boyutlandır",
  "files": [
   "css/app.css",
   "img/logo.jpg",

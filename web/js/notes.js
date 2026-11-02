@@ -61,7 +61,7 @@ Screens.notes = {
         ${curFolder ? `<div class="row"><span class="mu sp" style="font-size:12.5px">${ic('folder', 14)} ${U.esc(curFolder.name)} · ${list.length} not</span><button class="btn ghost sm" data-a="editFolder" data-id="${curFolder.id}">Klasörü düzenle</button></div>` : ''}
         ${list.length ? `<div class="notes">${list.map(n => {
           const txt = S.noteText(n);
-          const ph = (n.blocks || []).filter(b => b.t === 'photo').length;
+          const ph = (n.items || []).filter(b => b.t === 'photo').length + (n.blocks || []).filter(b => b.t === 'photo').length;
           return `<button class="ncard" data-a="openNote" data-id="${n.id}">${n.cover ? `<div class="cv" style="${coverStyle(n.cover)}"></div>` : ''}
             <div class="bd">${n.title ? `<b>${U.esc(n.title)}</b>` : ''}${txt ? `<p>${U.esc(txt.slice(0, 260))}</p>` : ''}
             ${(n.tags || []).length ? `<div class="tg">${n.tags.slice(0, 3).map(t => `<span>#${U.esc(t)}</span>`).join('')}</div>` : ''}
@@ -107,9 +107,8 @@ Screens.note = {
     const n = Screens.note.get(p);
     if (!n) return '<div class="wrap pad"><p class="mu">Not bulunamadı.</p></div>';
     const fd = S.db.folders.find(x => x.id === n.folder);
+    Screens.note.migrate(n);
     const blocks = (n.blocks || []).map((b, i) => {
-      if (b.t === 'photo') return `<div class="bl photo"><img src="${S.photoUrl(b.id)}" alt=""><button class="x" data-a="bDel" data-i="${i}" aria-label="Kaldır">${ic('x', 16)}</button></div>`;
-      if (b.t === 'sticker') return `<div class="bl sticker">${stickerHtml(b)}<button class="x" data-a="bDel" data-i="${i}" aria-label="Kaldır" style="left:96px;right:auto">${ic('x', 16)}</button></div>`;
       if (b.t === 'check') return `<div class="bl check ${b.done ? 'on' : ''}"><button class="chk lg ${b.done ? 'on' : ''}" data-a="bChk" data-i="${i}" style="width:20px;height:20px"></button><textarea class="bare grow" rows="1" data-in="bIn" data-i="${i}" placeholder="Liste maddesi">${U.esc(b.v)}</textarea><button class="x" data-a="bDel" data-i="${i}">${ic('x', 14)}</button></div>`;
       return `<div class="bl ${b.t === 'h' ? 'h' : ''}"><textarea class="bare grow" rows="1" data-in="bIn" data-i="${i}" placeholder="${b.t === 'h' ? 'Başlık' : i === 0 ? 'Yazmaya başla…' : 'Metin'}">${U.esc(b.v)}</textarea>${(n.blocks.length > 1) ? `<button class="x" data-a="bDel" data-i="${i}">${ic('x', 14)}</button>` : ''}</div>`;
     }).join('');
@@ -129,8 +128,10 @@ Screens.note = {
           ${(n.tags || []).map(t => `<button class="chip" data-a="tagDel" data-t="${U.esc(t)}" style="padding:4px 10px;font-size:11px;color:var(--ac)">#${U.esc(t)} ×</button>`).join('')}
           <button class="chip" data-a="tagAdd" style="padding:4px 10px;font-size:11px">${ic('tagI', 13)} Etiket</button>
         </div>
-        <div class="blocks">${blocks}</div>
-        <button data-a="tapEnd" style="height:120px;background:none;border:none" aria-label="Sona yaz"></button>
+        <div class="ncanvas" id="ncv" style="min-height:${Screens.note.canvasH(n)}px"><div class="blocks">${blocks}</div>
+        <button data-a="tapEnd" style="height:120px;width:100%;background:none;border:none" aria-label="Sona yaz"></button>
+        ${(n.items || []).map(it => Screens.note.itemHtml(it)).join('')}</div>
+        ${(n.items || []).length ? '<small class="mu2" style="text-align:center;font-size:11px">Fotoğraf ve sticker\'ları basılı tutup sürükle · dokununca boyutlandır ya da kaldır</small>' : ''}
       </div>
       <div class="edbar">
         <button data-a="addB" data-t="text">${ic('text', 20)}Metin</button><button data-a="addB" data-t="h">${ic('head', 20)}Başlık</button>
@@ -156,9 +157,86 @@ Screens.note = {
         }
       });
     });
+    Screens.note.bindCanvas(el, n);
     if (p.fresh) { delete p.fresh; setTimeout(() => { const t = el.querySelector('#nTitle'); if (t) t.focus(); }, 250); }
   },
-  leave(p) { const n = Screens.note.get(p); if (n) S.pruneNote(n); S.touch(); },
+  leave(p) { Screens.note.sel = null; const n = Screens.note.get(p); if (n) S.pruneNote(n); S.touch(); },
+  migrate(n) {
+    if (!n.items) n.items = [];
+    if (!(n.blocks || []).some(b => b.t === 'photo' || b.t === 'sticker')) return;
+    let y = 60;
+    n.blocks = n.blocks.filter(b => {
+      if (b.t !== 'photo' && b.t !== 'sticker') return true;
+      n.items.push(Object.assign({ fid: 'f' + U.id(), x: n.items.length % 2 ? 0.5 : 0.06, y, w: b.t === 'photo' ? 0.42 : 0.26, r: (n.items.length % 3) * 3 - 3 }, b));
+      y += 70; return false;
+    });
+    if (!n.blocks.length) n.blocks.push({ t: 'text', v: '' });
+    n.updated = Date.now(); S.touch({ quiet: true });
+  },
+  itemH(it) {
+    const W = Math.min(window.innerWidth, 600) - 28;
+    let ratio = 1;
+    if (it.t === 'photo') { const m = S.db.photos[it.id]; if (m && m.w) ratio = m.h / m.w; }
+    else if (it.s && /viewBox="0 0 (\d+) (\d+)"/.test(STICKERS[it.s] || '')) { const m = STICKERS[it.s].match(/viewBox="0 0 (\d+) (\d+)"/); ratio = +m[2] / +m[1]; }
+    return it.w * W * ratio + 10;
+  },
+  canvasH(n) { return Math.max(0, ...(n.items || []).map(it => it.y + Screens.note.itemH(it) + 20)); },
+  itemHtml(it) {
+    const inner = it.t === 'photo' ? `<img src="${S.photoUrl(it.id)}" alt="">` : stickerHtml(it);
+    return `<div class="fl ${it.t} ${Screens.note.sel === it.fid ? 'sel' : ''}" data-fid="${it.fid}" style="left:${(it.x * 100).toFixed(2)}%;top:${Math.round(it.y)}px;width:${(it.w * 100).toFixed(2)}%;transform:rotate(${it.r || 0}deg)">${inner}<button class="fx" data-a="flDel" data-fid="${it.fid}" aria-label="Kaldır">${ic('x', 15, 2.4)}</button><span class="fh" aria-hidden="true"></span></div>`;
+  },
+  setSel(fid) {
+    Screens.note.sel = fid;
+    document.querySelectorAll('#ncv .fl').forEach(e => e.classList.toggle('sel', e.dataset.fid === fid));
+  },
+  addItem(it) {
+    const n = Screens.note.get(App.cur.params);
+    const cv = document.getElementById('ncv');
+    const top = cv ? cv.getBoundingClientRect().top : 0;
+    it.fid = 'f' + U.id(); it.y = Math.max(10, Math.round(window.innerHeight * 0.32 - top)); it.x = it.x != null ? it.x : 0.3; it.r = Math.round(Math.random() * 8 - 4);
+    n.items = n.items || []; n.items.push(it);
+    Screens.note.sel = it.fid;
+    Screens.note.redraw();
+  },
+  bindCanvas(el, n) {
+    const cv = el.querySelector('#ncv'); if (!cv) return;
+    const scr = document.getElementById('screen');
+    cv.addEventListener('pointerdown', e => {
+      const fl = e.target.closest('.fl');
+      if (!fl) { if (Screens.note.sel) Screens.note.setSel(null); return; }
+      if (e.target.closest('.fx')) return;
+      const it = n.items.find(x => x.fid === fl.dataset.fid); if (!it) return;
+      e.preventDefault();
+      try { fl.setPointerCapture(e.pointerId); } catch (er) { }
+      const W = cv.clientWidth;
+      const st = { x0: e.clientX, y0: e.clientY, ix: it.x, iy: it.y, iw: it.w, scr: scr.scrollTop, mode: e.target.closest('.fh') ? 'resize' : 'wait' };
+      const timer = st.mode === 'wait' ? setTimeout(() => { st.mode = 'drag'; fl.classList.add('drag'); Screens.note.setSel(it.fid); U.vibrate(25); }, 330) : null;
+      const move = ev => {
+        const dx = ev.clientX - st.x0, dy = ev.clientY - st.y0;
+        if (st.mode === 'wait' && Math.abs(dx) + Math.abs(dy) > 10) { clearTimeout(timer); st.mode = 'scroll'; }
+        if (st.mode === 'scroll') { scr.scrollTop = st.scr - dy; return; }
+        if (st.mode === 'drag') {
+          it.x = Math.max(-0.15, Math.min(1 - it.w * 0.4, st.ix + dx / W)); it.y = Math.max(0, st.iy + dy);
+          fl.style.left = (it.x * 100) + '%'; fl.style.top = it.y + 'px';
+          const r = fl.getBoundingClientRect();
+          if (r.bottom > window.innerHeight - 70) scr.scrollTop += 6; else if (r.top < 60) scr.scrollTop -= 6;
+        } else if (st.mode === 'resize') {
+          it.w = Math.max(0.12, Math.min(1, st.iw + dx / W)); fl.style.width = (it.w * 100) + '%';
+        }
+      };
+      const up = () => {
+        clearTimeout(timer);
+        fl.removeEventListener('pointermove', move); fl.removeEventListener('pointerup', up); fl.removeEventListener('pointercancel', up);
+        fl.classList.remove('drag');
+        if (st.mode === 'wait') Screens.note.setSel(Screens.note.sel === it.fid ? null : it.fid);
+        else if (st.mode === 'drag' || st.mode === 'resize') {
+          n.updated = Date.now(); S.touch({ quiet: true });
+          cv.style.minHeight = Screens.note.canvasH(n) + 'px';
+        }
+      };
+      fl.addEventListener('pointermove', move); fl.addEventListener('pointerup', up); fl.addEventListener('pointercancel', up);
+    });
+  },
   redraw(focusI, atEnd) {
     const n = Screens.note.get(App.cur.params); n.updated = Date.now(); S.touch({ quiet: true });
     const el = document.getElementById('screen'), st = el.scrollTop;
@@ -181,15 +259,11 @@ Screens.note = {
       n.blocks.push({ t: 'text', v: '' }); Screens.note.redraw(n.blocks.length - 1);
     },
     async addPhoto() {
-      const n = Screens.note.get(App.cur.params);
       const ids = await S.addPhotos(true);
-      if (!ids.length) return;
-      let i = Screens.note.insertAt();
-      for (const id of ids) n.blocks.splice(i++, 0, { t: 'photo', id });
-      if (i >= n.blocks.length) n.blocks.push({ t: 'text', v: '' });
-      Screens.note.redraw();
+      ids.forEach((id, k) => Screens.note.addItem({ t: 'photo', id, w: 0.42, x: 0.08 + (k % 2) * 0.44 }));
     },
-    addSticker() { StickerSheet.open(b => { const n = Screens.note.get(App.cur.params); const i = Screens.note.insertAt(); n.blocks.splice(i, 0, b); if (i + 1 >= n.blocks.length) n.blocks.push({ t: 'text', v: '' }); Screens.note.redraw(); }); },
+    addSticker() { StickerSheet.open(b => Screens.note.addItem(Object.assign(b, { w: b.p ? 0.3 : 0.26 }))); },
+    flDel(t) { const n = Screens.note.get(App.cur.params); n.items = (n.items || []).filter(x => x.fid !== t.dataset.fid); Screens.note.sel = null; Screens.note.redraw(); },
     cover() { CoverSheet.open(Screens.note.get(App.cur.params)); },
     nPin() { const n = Screens.note.get(App.cur.params); n.pinned = !n.pinned; n.updated = Date.now(); S.touch({ quiet: true }); App.forceRefresh(); U.toast(n.pinned ? 'Sabitlendi' : 'Sabitleme kaldırıldı'); },
     nFav() { const n = Screens.note.get(App.cur.params); n.fav = !n.fav; n.updated = Date.now(); S.touch({ quiet: true }); App.forceRefresh(); },

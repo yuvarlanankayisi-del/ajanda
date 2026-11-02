@@ -286,7 +286,7 @@ const S = {
   /* boş not temizliği */
   pruneNote(n) {
     if (!n) return;
-    const empty = !n.title.trim() && !S.noteText(n) && !(n.blocks || []).some(b => b.t === 'photo' || b.t === 'sticker') && !n.cover;
+    const empty = !n.title.trim() && !S.noteText(n) && !(n.blocks || []).some(b => b.t === 'photo' || b.t === 'sticker') && !(n.items || []).length && !n.cover;
     if (empty) { const i = S.db.notes.indexOf(n); if (i >= 0) { S.db.notes.splice(i, 1); S.touch({ quiet: true }); } }
   },
 
