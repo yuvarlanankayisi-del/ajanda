@@ -360,10 +360,13 @@ input[type=date].inp,input[type=time].inp{color-scheme:dark}
 .ncanvas{position:relative}
 .fl{position:absolute;z-index:5;touch-action:none;-webkit-touch-callout:none;transition:filter .2s}
 .fl img,.fl>svg{width:100%;height:auto;display:block;pointer-events:none}
-.fl.photo img{border-radius:6px;border:4px solid #fff;box-shadow:0 6px 18px rgba(0,0,0,.35);background:#fff}
+.fl.photo{background:#fff;padding:4px;border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.fl.photo img{border-radius:3px}
+.fl .cap{font-family:var(--serif);font-style:italic;font-size:15px;line-height:1.2;text-align:center;padding:6px 4px 3px;color:#3A2328;pointer-events:none;word-break:break-word}
+.fl.sticker .cap{background:rgba(255,255,255,.92);border-radius:10px;margin-top:4px;font-size:14px}
 .fl.sticker>img{aspect-ratio:1;object-fit:cover;border-radius:50%;border:4px solid #fff;box-shadow:0 4px 14px rgba(0,0,0,.3)}
 .fl.drag{filter:drop-shadow(0 14px 22px rgba(0,0,0,.45));z-index:8}
-.fl .fx,.fl .fh{display:none}
+.fl .fx,.fl .fh,.fl .fr{display:none}
 .fl.sel{outline:1.5px dashed var(--ac);outline-offset:5px;z-index:7}
 .fl.sel .fx{display:flex;position:absolute;top:-16px;right:-16px;width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;border:none;align-items:center;justify-content:center;padding:0}
 .fl.sel .fh{display:block;position:absolute;right:-15px;bottom:-15px;width:30px;height:30px;border-radius:50%;background:var(--ac);border:4px solid var(--bg);box-shadow:0 2px 8px rgba(0,0,0,.4)}
@@ -385,3 +388,16 @@ input[type=date].inp,input[type=time].inp{color-scheme:dark}
 .ecd{width:54px;height:54px;border-radius:14px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .ecd b{font-family:var(--serif);font-size:24px;line-height:1}
 .ecd small{font-size:10px;font-weight:700}
+
+.fl.sel .fr{display:flex;position:absolute;left:-15px;bottom:-15px;width:30px;height:30px;border-radius:50%;background:var(--bg2);color:var(--ac);border:2px solid var(--ac);align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+/* yazı kutusu: açılış animasyonu ve çevresinde dolanan ışık */
+@property --cap-a{syntax:'<angle>';inherits:false;initial-value:0deg}
+.capbg{position:fixed;inset:0;z-index:69;background:rgba(0,0,0,.45);opacity:0;transition:opacity .25s}
+.capbg.on{opacity:1}
+.capbox{position:fixed;left:50%;top:38%;width:88%;max-width:420px;z-index:70;border-radius:22px;padding:2.5px;opacity:0;transform:translate(-50%,-50%) scale(.82) rotate(-2deg);transition:transform .32s cubic-bezier(.2,1.3,.4,1),opacity .25s;
+  background:conic-gradient(from var(--cap-a),transparent 0deg,transparent 220deg,var(--ac) 280deg,var(--gold) 320deg,var(--grad1) 345deg,transparent 360deg);animation:capspin 2.8s linear infinite;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.capbox.on{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0)}
+.capbox .in{background:var(--bg2);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.capbox textarea{border-color:transparent;background:var(--card)}
+.capbox:focus-within{animation-duration:1.6s}
+@keyframes capspin{to{--cap-a:360deg}}

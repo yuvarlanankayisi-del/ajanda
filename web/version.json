@@ -1,7 +1,7 @@
 {
- "version": 11,
+ "version": 12,
  "date": "02.11.2026",
- "notes": "Döngüm ve Özel Günler bölümleri",
+ "notes": "Notlarda fotoğraf/sticker döndürme ve çift dokunarak yazı ekleme",
  "files": [
   "css/app.css",
   "img/logo.jpg",

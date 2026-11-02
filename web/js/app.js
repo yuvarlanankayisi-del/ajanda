@@ -126,6 +126,7 @@ const App = {
   forceRefresh() { App._force = true; App.refresh(); },
   backKey() {
     if (Lock.on) return true;
+    if (typeof CaptionBox !== 'undefined' && CaptionBox.cur) { CaptionBox.cur(); return true; }
     if (App.sheets.length) { App.closeSheet(); return true; }
     return App.back();
   },

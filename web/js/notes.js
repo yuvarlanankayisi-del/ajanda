@@ -131,7 +131,7 @@ Screens.note = {
         <div class="ncanvas" id="ncv" style="min-height:${Screens.note.canvasH(n)}px"><div class="blocks">${blocks}</div>
         <button data-a="tapEnd" style="height:120px;width:100%;background:none;border:none" aria-label="Sona yaz"></button>
         ${(n.items || []).map(it => Screens.note.itemHtml(it)).join('')}</div>
-        ${(n.items || []).length ? '<small class="mu2" style="text-align:center;font-size:11px">Fotoğraf ve sticker\'ları basılı tutup sürükle · dokununca boyutlandır ya da kaldır</small>' : ''}
+        ${(n.items || []).length ? '<small class="mu2" style="text-align:center;font-size:11px">Basılı tut: taşı · Dokun: boyut, döndür, kaldır · İki kez dokun: yazı ekle</small>' : ''}
       </div>
       <div class="edbar">
         <button data-a="addB" data-t="text">${ic('text', 20)}Metin</button><button data-a="addB" data-t="h">${ic('head', 20)}Başlık</button>
@@ -182,8 +182,8 @@ Screens.note = {
   },
   canvasH(n) { return Math.max(0, ...(n.items || []).map(it => it.y + Screens.note.itemH(it) + 20)); },
   itemHtml(it) {
-    const inner = it.t === 'photo' ? `<img src="${S.photoUrl(it.id)}" alt="">` : stickerHtml(it);
-    return `<div class="fl ${it.t} ${Screens.note.sel === it.fid ? 'sel' : ''}" data-fid="${it.fid}" style="left:${(it.x * 100).toFixed(2)}%;top:${Math.round(it.y)}px;width:${(it.w * 100).toFixed(2)}%;transform:rotate(${it.r || 0}deg)">${inner}<button class="fx" data-a="flDel" data-fid="${it.fid}" aria-label="Kaldır">${ic('x', 15, 2.4)}</button><span class="fh" aria-hidden="true"></span></div>`;
+    const inner = (it.t === 'photo' ? `<img src="${S.photoUrl(it.id)}" alt="">` : stickerHtml(it)) + (it.caption ? `<div class="cap">${U.esc(it.caption)}</div>` : '');
+    return `<div class="fl ${it.t} ${Screens.note.sel === it.fid ? 'sel' : ''}" data-fid="${it.fid}" style="left:${(it.x * 100).toFixed(2)}%;top:${Math.round(it.y)}px;width:${(it.w * 100).toFixed(2)}%;transform:rotate(${it.r || 0}deg)">${inner}<button class="fx" data-a="flDel" data-fid="${it.fid}" aria-label="Kaldır">${ic('x', 15, 2.4)}</button><span class="fh" aria-hidden="true"></span><span class="fr" aria-hidden="true">${ic('repeat', 14, 2.2)}</span></div>`;
   },
   setSel(fid) {
     Screens.note.sel = fid;
@@ -193,7 +193,7 @@ Screens.note = {
     const n = Screens.note.get(App.cur.params);
     const cv = document.getElementById('ncv');
     const top = cv ? cv.getBoundingClientRect().top : 0;
-    it.fid = 'f' + U.id(); it.y = Math.max(10, Math.round(window.innerHeight * 0.32 - top)); it.x = it.x != null ? it.x : 0.3; it.r = Math.round(Math.random() * 8 - 4);
+    it.fid = 'f' + U.id(); it.y = Math.max(10, Math.round(window.innerHeight * 0.32 - top)); it.x = it.x != null ? it.x : 0.3; it.r = 0;
     n.items = n.items || []; n.items.push(it);
     Screens.note.sel = it.fid;
     Screens.note.redraw();
@@ -209,7 +209,8 @@ Screens.note = {
       e.preventDefault();
       try { fl.setPointerCapture(e.pointerId); } catch (er) { }
       const W = cv.clientWidth;
-      const st = { x0: e.clientX, y0: e.clientY, ix: it.x, iy: it.y, iw: it.w, scr: scr.scrollTop, mode: e.target.closest('.fh') ? 'resize' : 'wait' };
+      const st = { x0: e.clientX, y0: e.clientY, ix: it.x, iy: it.y, iw: it.w, ir: it.r || 0, scr: scr.scrollTop, mode: e.target.closest('.fh') ? 'resize' : e.target.closest('.fr') ? 'rotate' : 'wait' };
+      if (st.mode === 'rotate') { const r0 = fl.getBoundingClientRect(); st.cx = r0.left + r0.width / 2; st.cy = r0.top + r0.height / 2; st.a0 = Math.atan2(e.clientY - st.cy, e.clientX - st.cx); }
       const timer = st.mode === 'wait' ? setTimeout(() => { st.mode = 'drag'; fl.classList.add('drag'); Screens.note.setSel(it.fid); U.vibrate(25); }, 330) : null;
       const move = ev => {
         const dx = ev.clientX - st.x0, dy = ev.clientY - st.y0;
@@ -220,6 +221,11 @@ Screens.note = {
           fl.style.left = (it.x * 100) + '%'; fl.style.top = it.y + 'px';
           const r = fl.getBoundingClientRect();
           if (r.bottom > window.innerHeight - 70) scr.scrollTop += 6; else if (r.top < 60) scr.scrollTop -= 6;
+        } else if (st.mode === 'rotate') {
+          let r = st.ir + (Math.atan2(ev.clientY - st.cy, ev.clientX - st.cx) - st.a0) * 180 / Math.PI;
+          r = ((r + 540) % 360) - 180;
+          if (Math.abs(r) < 4) r = 0;
+          it.r = Math.round(r); fl.style.transform = `rotate(${it.r}deg)`;
         } else if (st.mode === 'resize') {
           it.w = Math.max(0.12, Math.min(1, st.iw + dx / W)); fl.style.width = (it.w * 100) + '%';
         }
@@ -228,8 +234,13 @@ Screens.note = {
         clearTimeout(timer);
         fl.removeEventListener('pointermove', move); fl.removeEventListener('pointerup', up); fl.removeEventListener('pointercancel', up);
         fl.classList.remove('drag');
-        if (st.mode === 'wait') Screens.note.setSel(Screens.note.sel === it.fid ? null : it.fid);
-        else if (st.mode === 'drag' || st.mode === 'resize') {
+        if (st.mode === 'wait') {
+          const now = Date.now();
+          if (Screens.note._lastTap && Screens.note._lastTap.fid === it.fid && now - Screens.note._lastTap.t < 350) {
+            Screens.note._lastTap = null; Screens.note.setSel(it.fid); CaptionBox.open(n, it);
+          } else { Screens.note._lastTap = { fid: it.fid, t: now }; Screens.note.setSel(Screens.note.sel === it.fid ? null : it.fid); }
+        }
+        else if (st.mode === 'drag' || st.mode === 'resize' || st.mode === 'rotate') {
           n.updated = Date.now(); S.touch({ quiet: true });
           cv.style.minHeight = Screens.note.canvasH(n) + 'px';
         }
@@ -326,5 +337,28 @@ const CoverSheet = {
         cvNone: () => { n.cover = null; n.updated = Date.now(); S.touch({ quiet: true }); App.closeSheet(rec); App.forceRefresh(); }
       }
     });
+  }
+};
+
+/* ---------- fotoğraf / sticker yazısı (çift dokunma) ---------- */
+const CaptionBox = {
+  open(n, it) {
+    const bg = document.createElement('div'); bg.className = 'capbg';
+    const box = document.createElement('div'); box.className = 'capbox';
+    box.innerHTML = `<div class="in"><b class="serif" style="font-size:20px">${it.t === 'photo' ? 'Fotoğrafa yazı' : 'Sticker\'a yazı'}</b>
+      <textarea class="inp" rows="2" maxlength="120" placeholder="Bir isim, tarih ya da küçük bir not…" style="min-height:0;font-family:var(--serif);font-style:italic;font-size:18px">${U.esc(it.caption || '')}</textarea>
+      <div class="row">${it.caption ? '<button class="btn ghost sm" data-c="del">Yazıyı sil</button>' : ''}<span class="sp"></span><button class="btn ghost sm" data-c="no">Vazgeç</button><button class="btn sm" data-c="ok">Kaydet</button></div></div>`;
+    document.body.appendChild(bg); document.body.appendChild(box);
+    const ta = box.querySelector('textarea');
+    requestAnimationFrame(() => { bg.classList.add('on'); box.classList.add('on'); setTimeout(() => ta.focus(), 260); });
+    const close = save => {
+      if (save != null) { it.caption = save; n.updated = Date.now(); S.touch({ quiet: true }); }
+      bg.classList.remove('on'); box.classList.remove('on');
+      setTimeout(() => { bg.remove(); box.remove(); if (save != null) Screens.note.redraw(); }, 250);
+      CaptionBox.cur = null;
+    };
+    CaptionBox.cur = () => close(null);
+    bg.onclick = () => close(null);
+    box.querySelectorAll('[data-c]').forEach(b => b.onclick = () => close(b.dataset.c === 'ok' ? ta.value.trim() : b.dataset.c === 'del' ? '' : null));
   }
 };
