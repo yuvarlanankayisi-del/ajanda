@@ -1,7 +1,7 @@
 {
- "version": 20,
+ "version": 21,
  "date": "02.11.2026",
- "notes": "Açılış animasyonu artık sırayla: bir açılışta kış, bir sonrakinde sonbahar",
+ "notes": "Kış açılışı: kar artık yavaş yavaş, dalgalı bir yüzeyle birikiyor",
  "files": [
   "css/app.css",
   "img/kedi_body.png",

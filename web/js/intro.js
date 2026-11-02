@@ -48,56 +48,80 @@ const Intro = {
     const COL = 3, cols = Math.ceil(W / COL) + 1;
     const pile = new Float32Array(cols);
     const flakes = [];
-    const T_FILL = 2300, T_HOLD = 2900, T_END = 3700;
+    /* T_FILL: ekran beyaza döner · T_HOLD: logo kalır · T_END: ana sayfa açılır */
+    const T_FILL = 3400, T_HOLD = 4000, T_END = 4800;
+    const ease = x => x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x);
+    const lump = Array.from({ length: 6 }, () => ({ f: 0.006 + Math.random() * 0.02, p: Math.random() * 6.28, a: 4 + Math.random() * 10 }));
     const t0 = performance.now();
     let last = t0;
     const spawn = (n, t) => {
       for (let i = 0; i < n; i++) {
-        const big = Math.random() < 0.25;
-        flakes.push({ x: Math.random() * (W + 80) - 40, y: -10 - Math.random() * 40, r: big ? 2.2 + Math.random() * 2.2 : 0.8 + Math.random() * 1.6, vy: (big ? 260 : 170) + Math.random() * 160 + t * 0.12, sw: Math.random() * 6.28, sp: 1 + Math.random() * 2 });
+        const big = Math.random() < 0.2 + t / 12000;
+        flakes.push({ x: Math.random() * (W + 120) - 80, y: -10 - Math.random() * 40, r: big ? 2.2 + Math.random() * 2.4 : 0.8 + Math.random() * 1.6, vy: (big ? 150 : 110) + Math.random() * 110, sw: Math.random() * 6.28, sp: 1 + Math.random() * 2, a: 0.6 + Math.random() * 0.35 });
       }
     };
     const frame = now => {
       if (isDone()) return;
       const t = now - t0, dt = Math.min(0.05, (now - last) / 1000); last = now;
       ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
-      /* hafif gece ışığı */
       const g = ctx.createRadialGradient(W * 0.5, H * 0.35, 10, W * 0.5, H * 0.35, H * 0.8);
       g.addColorStop(0, 'rgba(255,255,255,0.06)'); g.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-      if (t < T_FILL) spawn(Math.floor(4 + t / 90), t);
-      const wind = Math.sin(t / 700) * 40 + 30;
+      /* kar giderek yoğunlaşır */
+      if (t < T_FILL) { const n = 2 + t / 260; spawn(Math.floor(n) + (Math.random() < n % 1 ? 1 : 0), t); }
+      const wind = Math.sin(t / 900) * 30 + 25;
       ctx.fillStyle = '#fff';
       for (let i = flakes.length - 1; i >= 0; i--) {
         const f = flakes[i];
         f.sw += f.sp * dt;
-        f.y += f.vy * dt; f.x += (wind + Math.sin(f.sw) * 25) * dt;
+        f.y += f.vy * dt; f.x += (wind + Math.sin(f.sw) * 22) * dt;
         const c = Math.max(0, Math.min(cols - 1, Math.floor(f.x / COL)));
-        if (f.y >= H - pile[c]) {
-          /* kar birikir: komşu sütunlara yayılır */
-          const add = f.r * f.r * 1.9 + (t / T_FILL) * 9;
-          for (let k = -3; k <= 3; k++) { const j = c + k; if (j >= 0 && j < cols) pile[j] += add * (1 - Math.abs(k) / 4); }
+        if (f.y >= H - pile[c] + 2) {
+          /* düşen tane yüzeyde küçük bir tümsek bırakır */
+          const add = f.r * f.r * 0.55;
+          for (let k = -2; k <= 2; k++) { const j = c + k; if (j >= 0 && j < cols) pile[j] += add * (1 - Math.abs(k) / 3); }
           flakes.splice(i, 1); continue;
         }
-        ctx.globalAlpha = 0.85; ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 6.283); ctx.fill();
+        ctx.globalAlpha = f.a; ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 6.283); ctx.fill();
       }
       ctx.globalAlpha = 1;
-      /* biriken kar: yumuşak tepeli beyaz katman */
+      /* biriken kar: yavaşça, dalgalı bir yüzeyle yükselir */
+      const lvl = H * 0.42 * ease((t - 400) / (T_FILL - 400));
+      for (let j = 0; j < cols; j++) {
+        let tgt = lvl;
+        for (const L of lump) tgt += Math.sin(j * COL * L.f + L.p) * L.a * Math.min(1, lvl / 40);
+        if (pile[j] < tgt) pile[j] += (tgt - pile[j]) * Math.min(1, dt * 1.6);
+      }
       for (let j = 1; j < cols - 1; j++) pile[j] = (pile[j - 1] + pile[j] * 2 + pile[j + 1]) / 4;
-      const grow = t > 900 ? Math.pow((t - 900) / (T_FILL - 900), 2.2) * H * 0.9 * dt * 2.2 : 0;
-      if (t < T_HOLD) for (let j = 0; j < cols; j++) pile[j] = Math.min(H + 20, pile[j] + grow * (0.85 + 0.3 * Math.sin(j * 0.13 + t / 300)));
-      const sg = ctx.createLinearGradient(0, H * 0.3, 0, H);
-      sg.addColorStop(0, '#FFFFFF'); sg.addColorStop(1, '#EEF2F8');
-      ctx.fillStyle = sg;
-      ctx.beginPath(); ctx.moveTo(0, H);
-      for (let j = 0; j < cols; j++) ctx.lineTo(j * COL, H - pile[j]);
-      ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
-      /* tamamen beyazlama */
-      if (t > T_FILL - 300) { ctx.fillStyle = `rgba(255,255,255,${Math.min(1, (t - T_FILL + 300) / 500)})`; ctx.fillRect(0, 0, W, H); }
-      if (t > T_FILL && !brand.classList.contains('on')) brand.classList.add('on', 'dark');
+      let top = H; for (let j = 0; j < cols; j++) top = Math.min(top, H - pile[j]);
+      const path = () => { ctx.beginPath(); ctx.moveTo(0, H); for (let j = 0; j < cols; j++) ctx.lineTo(j * COL, H - pile[j]); ctx.lineTo(W, H); ctx.closePath(); };
+      const sg = ctx.createLinearGradient(0, top, 0, H);
+      sg.addColorStop(0, '#FFFFFF'); sg.addColorStop(0.25, '#F3F6FB'); sg.addColorStop(1, '#DCE4F0');
+      ctx.fillStyle = sg; path(); ctx.fill();
+      /* yüzeyin altında hafif mavi gölge, üstünde parlak kenar */
+      ctx.save(); ctx.lineJoin = 'round';
+      ctx.beginPath(); for (let j = 0; j < cols; j++) ctx.lineTo(j * COL, H - pile[j] + 5);
+      ctx.strokeStyle = 'rgba(170,185,212,.35)'; ctx.lineWidth = 5; ctx.stroke();
+      ctx.beginPath(); for (let j = 0; j < cols; j++) ctx.lineTo(j * COL, H - pile[j] + 1);
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5; ctx.stroke();
+      /* yüzeyde ışıltılar */
+      if (lvl > 20) for (let i = 0; i < 6; i++) {
+        const j = (Math.random() * cols) | 0, y = H - pile[j] + 3 + Math.random() * 30;
+        ctx.globalAlpha = Math.random() * 0.8; ctx.fillStyle = '#fff'; ctx.fillRect(j * COL, y, 1.6, 1.6);
+      }
+      ctx.restore(); ctx.globalAlpha = 1;
+      /* tipi: hava beyaz pusla dolar, ekran yavaşça bembeyaz olur */
+      const fog = ease((t - 2300) / (T_FILL - 1700));
+      if (fog > 0) {
+        const fg = ctx.createLinearGradient(0, 0, 0, H);
+        fg.addColorStop(0, `rgba(255,255,255,${fog * 0.85 + (fog > 0.9 ? (fog - 0.9) * 1.5 : 0)})`);
+        fg.addColorStop(1, `rgba(255,255,255,${Math.min(1, fog * 1.15)})`);
+        ctx.fillStyle = fg; ctx.fillRect(0, 0, W, H);
+      }
+      if (t >= T_FILL) { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H); }
+      if (t > T_FILL - 150 && !brand.classList.contains('on') && t < T_HOLD) brand.classList.add('on', 'dark');
       if (t > T_HOLD) { brand.classList.remove('on'); }
       if (t > T_HOLD + 200) {
-        /* ortadan açılan daire ile ana sayfa görünür */
         const p = Math.min(1, (t - T_HOLD - 200) / (T_END - T_HOLD - 200));
         ctx.save(); ctx.globalCompositeOperation = 'destination-out';
         const r = Math.pow(p, 1.6) * Math.hypot(W, H) * 0.62;
