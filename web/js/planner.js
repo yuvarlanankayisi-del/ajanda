@@ -14,14 +14,36 @@ const Planner = {
   }
 };
 
-const CAT_SVG = `<svg class="pcat" viewBox="0 0 64 40" aria-hidden="true"><g fill="#16090D">
-  <path class="tail" d="M14 20 C6 18 3 9 8 3" fill="none" stroke="#16090D" stroke-width="3.2" stroke-linecap="round"/>
-  <ellipse cx="30" cy="22" rx="17" ry="8.5"/>
-  <g class="head"><circle cx="49" cy="15" r="6.8"/><path d="M44.5 11 L45.5 3.5 L49 8.5 Z M50 8.5 L54 3.5 L54.5 11 Z"/><circle cx="51.5" cy="14" r="1.1" fill="#E8C35A"/></g>
-  <path class="leg l1" d="M41 27 L42 37" stroke="#16090D" stroke-width="3.4" stroke-linecap="round"/>
-  <path class="leg l2" d="M37 27 L37 37" stroke="#16090D" stroke-width="3.4" stroke-linecap="round"/>
-  <path class="leg l2" d="M21 27 L20 37" stroke="#16090D" stroke-width="3.4" stroke-linecap="round"/>
-  <path class="leg l1" d="M17 26 L16 37" stroke="#16090D" stroke-width="3.4" stroke-linecap="round"/></g></svg>`;
+const CAT_DEFS = `<defs><linearGradient id="cb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E9DCC9"/><stop offset=".65" stop-color="#DCC8AE"/><stop offset="1" stop-color="#C7AD8E"/></linearGradient>
+  <linearGradient id="cp" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#C9AE90"/><stop offset="1" stop-color="#4A3226"/></linearGradient>
+  <linearGradient id="cl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E2D2BD"/><stop offset=".55" stop-color="#C9AE90"/><stop offset="1" stop-color="#3E2A20"/></linearGradient>
+  <linearGradient id="cl2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#CDB497"/><stop offset=".5" stop-color="#A88A6C"/><stop offset="1" stop-color="#33231B"/></linearGradient>
+  <radialGradient id="cm" cx=".7" cy=".6" r=".6"><stop offset="0" stop-color="#3E2A20"/><stop offset="1" stop-color="#7A5A45" stop-opacity="0"/></radialGradient></defs>`;
+/* yürüyen siyam kedisi (yandan) */
+const CAT_WALK = `<svg class="pcat" viewBox="0 0 92 52" aria-hidden="true">${CAT_DEFS}
+  <path class="tail" d="M19 24 C9 23 5 15 8 5" fill="none" stroke="url(#cp)" stroke-width="3.6" stroke-linecap="round"/>
+  <path class="leg l1" d="M27 29 C26 34 26 39 24.5 46" stroke="url(#cl2)" stroke-width="3.6" stroke-linecap="round" fill="none"/>
+  <path class="leg l2" d="M60 29 C60 35 60 40 61 46" stroke="url(#cl2)" stroke-width="3.4" stroke-linecap="round" fill="none"/>
+  <path d="M18 21 C22 13 50 11 62 15 C69 17 71 24 67 29 C61 33 32 34 23 31 C17 29 15 24 18 21 Z" fill="url(#cb)"/>
+  <path class="leg l2" d="M31 29 C31 35 31 40 30 46" stroke="url(#cl)" stroke-width="3.8" stroke-linecap="round" fill="none"/>
+  <path class="leg l1" d="M64 28 C65 34 66 39 66.5 46" stroke="url(#cl)" stroke-width="3.6" stroke-linecap="round" fill="none"/>
+  <g class="head"><path d="M64 15 C66 9 70 6 75 6 C81 6 85 10 85 15 C85 20 81 23 76 23 C70 23 66 20 64 15 Z" fill="#E6D6C1"/>
+    <path d="M68 8 L69.5 0.5 L74 6.2 Z M77.5 6 L82.5 1 L83 8.5 Z" fill="#4A3226"/>
+    <path d="M73 9 C79 8 85 11 85.5 15.5 C85.5 19.5 82 22.5 77 22.8 C74 18 72 13 73 9 Z" fill="url(#cm)"/>
+    <path d="M78.3 12.8 q1.8 -1.3 3.3 0.1 q-1.6 1 -3.3 -0.1z" fill="#7FB4E3"/><circle cx="80" cy="12.9" r=".55" fill="#10202E"/>
+    <path d="M85.3 17.2 l-1 .8" stroke="#2A1A14" stroke-width=".8" stroke-linecap="round"/>
+    <path d="M84 18.5 l7 -1 M84 19.3 l7 .8" stroke="#F4EDE4" stroke-width=".35" opacity=".8"/></g></svg>`;
+/* uzanıp uyuyan siyam kedisi */
+const CAT_SLEEP = `<svg class="pcat sleep" viewBox="0 0 92 52" aria-hidden="true">${CAT_DEFS}
+  <g class="breathe"><path d="M14 44 C10 36 22 28 42 28 C62 28 74 34 74 42 C74 47 60 49 42 49 C26 49 16 48 14 44 Z" fill="url(#cb)"/>
+  <path d="M16 45 C12 50 30 51 46 50 C58 49.5 66 49 70 47" fill="none" stroke="url(#cp)" stroke-width="3.6" stroke-linecap="round"/>
+  <ellipse cx="66" cy="46.5" rx="7" ry="2.6" fill="#4A3226"/></g>
+  <g class="shead"><path d="M62 38 C63 31 68 28 74 28 C80 28 84 32 84 37 C84 42 80 45 74 45 C68 45 63 43 62 38 Z" fill="#E6D6C1"/>
+    <path d="M66 31 L66.5 23.5 L71 29 Z M76.5 28.5 L82 24.5 L81.5 32 Z" fill="#4A3226"/>
+    <path d="M71 31 C78 30 84 33 84 37.5 C84 41.5 80 44.5 75 44.8 C72 40 70 35 71 31 Z" fill="url(#cm)"/>
+    <path d="M75.5 36.6 q1.8 1.2 3.4 0" fill="none" stroke="#1E120E" stroke-width=".9" stroke-linecap="round"/></g>
+  <text class="zz z1" x="80" y="20" font-family="Cormorant Garamond,serif" font-size="9" font-style="italic" fill="var(--ink2)">z</text>
+  <text class="zz z2" x="85" y="13" font-family="Cormorant Garamond,serif" font-size="7" font-style="italic" fill="var(--ink2)">z</text></svg>`;
 
 const ORN = `<svg class="orn" viewBox="0 0 120 12" aria-hidden="true"><path d="M2 6 H48 M72 6 H118" stroke="currentColor" stroke-width=".8"/><path d="M60 1 L62 6 L60 11 L58 6 Z M52 6 L54 4.5 L56 6 L54 7.5 Z M64 6 L66 4.5 L68 6 L66 7.5 Z" fill="currentColor"/></svg>`;
 const FACES = [5, 4, 3, 2, 1].map(v => ({ v, d: v === 5 ? 'M8.5 13.5c1 1.6 2.2 2.3 3.5 2.3s2.5-.7 3.5-2.3' : v === 4 ? 'M9 14c.9.9 1.9 1.3 3 1.3s2.1-.4 3-1.3' : v === 3 ? 'M9 14.5h6' : v === 2 ? 'M9 15.5c.9-.9 1.9-1.3 3-1.3s2.1.4 3 1.3' : 'M8.5 16c1-1.5 2.2-2.2 3.5-2.2s2.5.7 3.5 2.2M8.5 9.5l2 1M15.5 9.5l-2 1' }));
@@ -75,12 +97,14 @@ Screens.page = {
     const qi = (Math.floor(U.parse(k).getTime() / 86400000)) % QUOTES.length;
     const empty = Math.max(0, 7 - tasks.length);
     const slotOf = t => { const h = +t.time.slice(0, 2); let best = HOURS[0]; for (const x of HOURS) if (+x <= h) best = x; return best; };
-    return `<div class="topbar" style="padding-top:14px;padding-bottom:4px"><button class="icbtn box" data-a="back">${ic('back', 20, 1.8)}</button>
-      <span class="sp"></span><button class="icbtn box" data-a="pgShift" data-n="-1" aria-label="Önceki gün">${ic('left', 20, 1.8)}</button>
-      <button class="icbtn box" data-a="pgShift" data-n="1" aria-label="Sonraki gün">${ic('right', 20, 1.8)}</button></div>
+    const strip = []; for (let i = -120; i <= 21; i++) strip.push(U.addDays(tk, i));
+    return `<div class="topbar" style="padding-top:14px;padding-bottom:2px"><button class="icbtn box" data-a="back">${ic('back', 20, 1.8)}</button>
+      <b class="serif sp" style="font-size:20px;text-align:center" id="stripM">${U.months[dt.getMonth()]} ${dt.getFullYear()}</b>
+      <button class="icbtn box" data-a="pgToday" aria-label="Bugün">${ic('sun', 19, 1.8)}</button></div>
+    <div class="dstrip" id="dstrip">${strip.map(x => { const xd = U.parse(x), s = Planner.summary(x); return `<button class="${x === k ? 'sel' : ''} ${x === tk ? 'today' : ''}" data-a="pgGo" data-k="${x}" data-m="${U.months[xd.getMonth()]} ${xd.getFullYear()}"><small>${U.daysS[U.dow(x)]}</small><b>${xd.getDate()}</b><i style="background:${s.mood ? s.mood.c : s.n || s.wrote ? 'var(--ac)' : 'transparent'}"></i></button>`; }).join('')}</div>
     <div class="paperwrap" style="${Planner.vars()}">
      <div class="paper ${p.dir ? 'turn' + p.dir : ''}">
-      <div class="pcatlane">${CAT_SVG}</div>
+      <div class="pcatlane">${p.catSlept ? CAT_SLEEP.replace('class="pcat sleep"', 'class="pcat sleep" style="left:calc(100% - 96px)"') : CAT_WALK}</div>
       <svg class="pmoon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3a9 9 0 1 0 6 13A7 7 0 1 1 15 3z" fill="currentColor"/></svg>
       <span class="pstar" style="left:12%;top:76px">✦</span><span class="pstar" style="right:20%;top:96px;font-size:9px">✦</span><span class="pstar" style="left:24%;top:118px;font-size:8px">✦</span>
       <header class="phead"><div class="pscript big">Günlük Plan</div><div class="psub">HAYAL ET · PLANLA · BAŞAR</div></header>
@@ -117,6 +141,26 @@ Screens.page = {
   mount(el, p) {
     App.growAll(el);
     delete p.dir;
+    const ds = el.querySelector('#dstrip'), sel = ds && ds.querySelector('.sel');
+    if (sel) ds.scrollLeft = sel.offsetLeft - ds.clientWidth / 2 + sel.offsetWidth / 2;
+    if (ds) ds.addEventListener('scroll', U.debounce(() => {
+      const mid = ds.scrollLeft + ds.clientWidth / 2; let best = null;
+      ds.querySelectorAll('button').forEach(b => { if (!best || Math.abs(b.offsetLeft + b.offsetWidth / 2 - mid) < Math.abs(best.offsetLeft + best.offsetWidth / 2 - mid)) best = b; });
+      const m = el.querySelector('#stripM'); if (best && m) m.textContent = best.dataset.m;
+    }, 80));
+    const cat = el.querySelector('.pcat:not(.sleep)');
+    if (cat) {
+      const lane = cat.parentNode;
+      clearTimeout(Screens.page._catT);
+      Screens.page._catT = setTimeout(() => {
+        cat.style.transition = 'left 17s linear'; cat.style.left = (lane.clientWidth - 96) + 'px';
+        cat.addEventListener('transitionend', () => {
+          if (App.cur.entry.name !== 'page') return;
+          p.catSlept = true;
+          lane.innerHTML = CAT_SLEEP.replace('class="pcat sleep"', 'class="pcat sleep enter" style="left:' + (lane.clientWidth - 96) + 'px"');
+        }, { once: true });
+      }, 600);
+    }
     const k = p.k;
     el.querySelectorAll('input[data-new]').forEach(inp => inp.addEventListener('keydown', e => {
       if (e.key !== 'Enter' || !inp.value.trim()) return;
@@ -141,6 +185,8 @@ Screens.page = {
     }, { passive: true });
   },
   acts: {
+    pgGo(t) { const p = App.cur.entry.params; const nk = t.dataset.k; if (nk === p.k) return; p.dir = nk > p.k ? 'L' : 'R'; p.k = nk; App.forceRefresh(); },
+    pgToday() { const p = App.cur.entry.params; const tk = U.today(); if (p.k === tk) return; p.dir = tk > p.k ? 'L' : 'R'; p.k = tk; App.forceRefresh(); },
     pgShift(t) { const p = App.cur.entry.params; const n = +t.dataset.n; p.k = U.addDays(p.k, n); p.dir = n > 0 ? 'L' : 'R'; App.forceRefresh(); document.getElementById('screen').scrollTop = 0; },
     pgTgl(t) { const x = S.db.tasks.find(y => y.id === t.dataset.id); if (x) { S.toggle(x, App.cur.params.k); App.forceRefresh(); } },
     pgEdit(t) { const x = S.db.tasks.find(y => y.id === t.dataset.id); if (x) TaskSheet.open(x); },

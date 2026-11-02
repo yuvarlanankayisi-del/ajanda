@@ -1,7 +1,7 @@
 {
- "version": 13,
+ "version": 14,
  "date": "02.11.2026",
- "notes": "Günlük plan defteri (kâğıt sayfa, yürüyen kedi), yazı kutusu düzeltmesi",
+ "notes": "Defter sayfasında kaydırılabilir tarih şeridi, siyam kedisi yürüyüp uyuyor",
  "files": [
   "css/app.css",
   "img/logo.jpg",

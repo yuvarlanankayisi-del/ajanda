@@ -424,20 +424,27 @@ input[type=date].inp,input[type=time].inp{color-scheme:dark}
 .paper.turnR{animation:pgspin 14s linear infinite,turnR .38s ease-out}
 @keyframes turnL{from{transform:rotateY(-14deg) translateX(30px);opacity:.3}to{transform:none;opacity:1}}
 @keyframes turnR{from{transform:rotateY(14deg) translateX(-30px);opacity:.3}to{transform:none;opacity:1}}
-.pcatlane{position:absolute;left:16px;right:16px;top:14px;height:40px;border-bottom:1px solid var(--rule);overflow:hidden;z-index:3;pointer-events:none}
-.pcat{position:absolute;bottom:0;width:58px;height:36px;left:-70px;animation:catwalk 46s linear infinite}
-@keyframes catwalk{0%{left:-70px}62%{left:calc(100% + 10px)}100%{left:calc(100% + 10px)}}
-.pcat .leg{transform-box:fill-box;transform-origin:50% 0;animation:legA .7s ease-in-out infinite alternate}
+.pcatlane{position:absolute;left:16px;right:16px;top:12px;height:54px;border-bottom:1px solid var(--rule);overflow:hidden;z-index:3;pointer-events:none}
+.pcat{position:absolute;bottom:-1px;width:92px;height:52px;left:-96px}
+.pcat.sleep{bottom:-3px}
+.pcat.enter{animation:catin .8s ease}
+@keyframes catin{from{opacity:.2;transform:translateY(3px)}to{opacity:1;transform:none}}
+.pcat .breathe{transform-box:fill-box;transform-origin:50% 100%;animation:breathe 3.4s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.045)}}
+.pcat .zz{animation:zz 4s ease-in-out infinite;opacity:0}
+.pcat .z2{animation-delay:2s}
+@keyframes zz{0%{opacity:0;transform:translate(0,4px)}30%{opacity:.8}100%{opacity:0;transform:translate(4px,-8px)}}
+.pcat .leg{transform-box:fill-box;transform-origin:50% 0;animation:legA .55s ease-in-out infinite alternate}
 .pcat .leg.l2{animation-name:legB}
-@keyframes legA{from{transform:rotate(18deg)}to{transform:rotate(-18deg)}}
-@keyframes legB{from{transform:rotate(-18deg)}to{transform:rotate(18deg)}}
+@keyframes legA{from{transform:rotate(14deg)}to{transform:rotate(-14deg)}}
+@keyframes legB{from{transform:rotate(-14deg)}to{transform:rotate(14deg)}}
 .pcat .tail{transform-box:fill-box;transform-origin:100% 100%;animation:tailw 1.6s ease-in-out infinite alternate}
 @keyframes tailw{from{transform:rotate(-10deg)}to{transform:rotate(12deg)}}
-.pcat .head{animation:bob .7s ease-in-out infinite alternate}
+.pcat .head{animation:bob .55s ease-in-out infinite alternate}
 @keyframes bob{from{transform:translateY(0)}to{transform:translateY(1px)}}
-.pmoon{position:absolute;right:28px;top:62px;width:20px;height:20px;color:var(--pacc);opacity:.55}
+.pmoon{position:absolute;right:28px;top:76px;width:20px;height:20px;color:var(--pacc);opacity:.55}
 .pstar{position:absolute;color:var(--pacc);opacity:.6;font-size:11px}
-.phead{text-align:center;padding:42px 18px 4px;color:var(--pacc)}
+.phead{text-align:center;padding:56px 18px 4px;color:var(--pacc)}
 .pscript.big{font-size:46px;line-height:1}
 .psub{font-family:var(--serif);font-size:10.5px;letter-spacing:.32em;color:var(--ink2);margin-top:6px}
 .prow2{display:grid;grid-template-columns:1fr 1.25fr;gap:8px;padding:10px 20px 0}
@@ -484,3 +491,13 @@ input[type=date].inp,input[type=time].inp{color-scheme:dark}
 .ptag.done{text-decoration:line-through;opacity:.6}
 .pnum{display:flex;align-items:center;gap:6px;border-bottom:1px dashed var(--rule)}
 .pnum span{font-family:var(--serif);color:var(--pacc);font-weight:600}
+
+.dstrip{display:flex;gap:6px;overflow-x:auto;padding:6px 12px 10px;scroll-behavior:smooth;scrollbar-width:none}
+.dstrip::-webkit-scrollbar{display:none}
+.dstrip button{flex-shrink:0;width:46px;border:1px solid var(--line);background:var(--card);color:var(--tx);border-radius:14px;padding:7px 0;display:flex;flex-direction:column;align-items:center;gap:2px}
+.dstrip small{font-size:10px;color:var(--mu)}
+.dstrip b{font-size:16px}
+.dstrip i{width:5px;height:5px;border-radius:50%}
+.dstrip button.today{border-color:var(--ac)}
+.dstrip button.sel{background:var(--ac2);color:var(--acTx);border-color:var(--ac2)}
+.dstrip button.sel small{color:var(--acTx)}
