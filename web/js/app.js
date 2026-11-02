@@ -28,6 +28,7 @@ const App = {
   start() {
     const st = S.set.start === 'agenda' ? 'agenda' : 'home';
     App.go(st, {}, { reset: true });
+    if (!App._introDone) { App._introDone = true; try { Intro.play(); } catch (e) { } }
     if (S.set.lock && S.set.lock.on) Lock.show();
     App.lastDay = U.today();
     try { Screens.pomodoro.finishIfDone(); } catch (e) { }
