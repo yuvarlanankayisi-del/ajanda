@@ -7,7 +7,8 @@ const Planner = {
     const paper = Col.mix(v.ac2, '#F7EDE6', 0.9), ink = Col.mix(v.ac2, '#1A0A10', 0.3);
     return { paper, paper2: Col.mix(ink, paper, 0.93), ink, ink2: Col.mix(ink, paper, 0.38), rule: Col.rgba(ink, 0.3), acc: v.ac2, glow1: v.ac, glow2: v.gold };
   },
-  vars() { const p = Planner.paper(); return `--pp:${p.paper};--pp2:${p.paper2};--ink:${p.ink};--ink2:${p.ink2};--rule:${p.rule};--pacc:${p.acc};--g1:${p.glow1};--g2:${p.glow2}`; },
+  fonts: { formal: { n: 'Okunaklı el yazısı', f: "'Petit Formal Script'", s: '31px' }, dance: { n: 'Rahat el yazısı', f: "'Dancing Script'", s: '40px' }, fancy: { n: 'Süslü el yazısı', f: "'Pinyon Script'", s: '40px' }, serif: { n: 'Sade italik', f: "'Cormorant Garamond'", s: '38px' } },
+  vars() { const p = Planner.paper(); const fo = Planner.fonts[S.set.pfont] || Planner.fonts.formal; return `--pfont:${fo.f};--pfs:${fo.s};--pp:${p.paper};--pp2:${p.paper2};--ink:${p.ink};--ink2:${p.ink2};--rule:${p.rule};--pacc:${p.acc};--g1:${p.glow1};--g2:${p.glow2}`; },
   summary(k) {
     const ts = S.tasksOn(k), d = S.db.days[k] || {};
     return { n: ts.length, done: ts.filter(t => S.isDone(t, k)).length, mood: moodOf(d.mood), wrote: !!(d.note || d.best || (d.learned || []).some(Boolean) || Object.values(d.sched || {}).some(Boolean)), spend: (d.expenses || []).reduce((a, e) => a + (+e.a || 0), 0) };
@@ -102,12 +103,12 @@ Screens.page = {
       <b class="serif sp" style="font-size:20px;text-align:center" id="stripM">${U.months[dt.getMonth()]} ${dt.getFullYear()}</b>
       <button class="icbtn box" data-a="pgToday" aria-label="Bugün">${ic('sun', 19, 1.8)}</button></div>
     <div class="dstrip" id="dstrip">${strip.map(x => { const xd = U.parse(x), s = Planner.summary(x); return `<button class="${x === k ? 'sel' : ''} ${x === tk ? 'today' : ''}" data-a="pgGo" data-k="${x}" data-m="${U.months[xd.getMonth()]} ${xd.getFullYear()}"><small>${U.daysS[U.dow(x)]}</small><b>${xd.getDate()}</b><i style="background:${s.mood ? s.mood.c : s.n || s.wrote ? 'var(--ac)' : 'transparent'}"></i></button>`; }).join('')}</div>
-    <div class="paperwrap" style="${Planner.vars()}">
-     <div class="paper ${p.dir ? 'turn' + p.dir : ''}">
+    <div class="paperwrap ${p.dir ? 'turn' + p.dir : ''}" style="${Planner.vars()}">
+     <div class="paper" style="${Screens.page._sc ? `transform:scale(${Screens.page._sc});transform-origin:top center` : ''}">
       <img class="prealcat" src="img/cat.png" alt="" aria-hidden="true">
       <svg class="pmoon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3a9 9 0 1 0 6 13A7 7 0 1 1 15 3z" fill="currentColor"/></svg>
       <span class="pstar" style="left:9%;top:22px">✦</span><span class="pstar" style="left:22%;top:46px;font-size:8px">✦</span>
-      <header class="phead"><div class="pscript big">Günlük Plan</div><div class="psub">HAYAL ET · PLANLA · BAŞAR</div></header>
+      <header class="phead"><button class="pscript big" data-a="pgFont" style="background:none;border:none;color:inherit;padding:0">Günlük Plan</button><div class="psub">HAYAL ET · PLANLA · BAŞAR</div></header>
       <div class="prow2"><div class="pfield"><span>TARİH</span><b>${U.pad(dt.getDate())} ${U.months[dt.getMonth()]} ${dt.getFullYear()}</b></div><div class="pfield" style="justify-content:center"><b style="font-style:italic;font-weight:500">${U.days[U.dow(k)]}${k === tk ? ' · bugün' : ''}</b></div></div>
 
       <div class="pgrid">
@@ -147,7 +148,7 @@ Screens.page = {
       ds.querySelectorAll('button').forEach(b => { if (!best || Math.abs(b.offsetLeft + b.offsetWidth / 2 - mid) < Math.abs(best.offsetLeft + best.offsetWidth / 2 - mid)) best = b; });
       const m = el.querySelector('#stripM'); if (best && m) m.textContent = best.dataset.m;
     }, 80));
-    setTimeout(() => Screens.page.fit(el), 30);
+    Screens.page.fit(el);
     const k = p.k;
     el.querySelectorAll('input[data-new]').forEach(inp => inp.addEventListener('keydown', e => {
       if (e.key !== 'Enter' || !inp.value.trim()) return;
@@ -198,17 +199,23 @@ Screens.page = {
   /* kâğıdı ekrana sığdır */
   fit(el) {
     const wrap = el.querySelector('.paperwrap'), paper = el.querySelector('.paper'); if (!wrap || !paper) return;
-    paper.style.transform = ''; wrap.style.height = '';
     const avail = window.innerHeight - wrap.getBoundingClientRect().top - 84;
     const h = paper.offsetHeight;
-    if (h > avail) {
-      const sc = Math.max(0.8, avail / h);
-      paper.style.transform = `scale(${sc})`; paper.style.transformOrigin = 'top center';
-      wrap.style.height = (h * sc + 14) + 'px';
-    }
+    const sc = h > avail ? Math.max(0.8, avail / h) : 1;
+    Screens.page._sc = sc < 1 ? sc : null;
+    paper.style.transform = sc < 1 ? `scale(${sc})` : ''; paper.style.transformOrigin = 'top center';
+    wrap.style.height = sc < 1 ? (h * sc + 14) + 'px' : '';
   },
   acts: {
-    pgSave() { Screens.page.flush(); U.vibrate(15); U.toast('Kaydedildi ✓'); App.forceRefresh(); },
+    pgSave() {
+      const hadNew = Array.from(document.querySelectorAll('#screen input[data-new]')).some(i => i.value.trim());
+      Screens.page.flush(); U.vibrate(15); U.toast('Kaydedildi ✓');
+      if (hadNew) App.forceRefresh();
+    },
+    pgFont() {
+      const rec = App.sheet(`<h3>Defter yazı tipi</h3><div class="menu">${Object.entries(Planner.fonts).map(([k, f]) => `<button data-a="pfSet" data-k="${k}" style="font-family:${f.f},serif;font-size:24px;font-weight:500">${(S.set.pfont || 'formal') === k ? `<span class="ac">${ic('check', 18, 2.4)}</span>` : '<span style="width:18px"></span>'}Günlük Plan <small style="font-family:var(--sans);font-size:11px;color:var(--mu);margin-left:auto">${f.n}</small></button>`).join('')}</div>`,
+        { acts: { pfSet: b => { S.set.pfont = b.dataset.k; S.set.updated = Date.now(); S.touch({ quiet: true }); App.closeSheet(rec); App.forceRefresh(); } } });
+    },
     pgGo(t) { Screens.page.flush(); const p = App.cur.entry.params; const nk = t.dataset.k; if (nk === p.k) return; p.dir = nk > p.k ? 'L' : 'R'; p.k = nk; App.forceRefresh(); },
     pgToday() { Screens.page.flush(); const p = App.cur.entry.params; const tk = U.today(); if (p.k === tk) return; p.dir = tk > p.k ? 'L' : 'R'; p.k = tk; App.forceRefresh(); },
     pgShift(t) { Screens.page.flush(); const p = App.cur.entry.params; const n = +t.dataset.n; p.k = U.addDays(p.k, n); p.dir = n > 0 ? 'L' : 'R'; App.forceRefresh(); document.getElementById('screen').scrollTop = 0; },

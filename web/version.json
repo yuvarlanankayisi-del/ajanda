@@ -1,7 +1,7 @@
 {
- "version": 17,
+ "version": 18,
  "date": "02.11.2026",
- "notes": "Yazılar her bölümde doğru yere kaydedilir",
+ "notes": "Defter: Kaydet'te titreme yok, okunaklı el yazısı ve yazı tipi seçimi",
  "files": [
   "css/app.css",
   "img/cat.png",

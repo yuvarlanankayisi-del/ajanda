@@ -403,7 +403,7 @@ input[type=date].inp,input[type=time].inp{color-scheme:dark}
 @keyframes capspin{to{--cap-a:360deg}}
 
 /* ===== Günlük plan defteri ===== */
-.pscript{font-family:'Pinyon Script','Cormorant Garamond',serif;font-style:normal}
+.pscript{font-family:var(--pfont,'Petit Formal Script'),'Cormorant Garamond',serif;font-style:normal}
 .pindex{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border-radius:14px;border:1px solid var(--rule);background:var(--pp);color:var(--ink);text-align:left;box-shadow:0 3px 10px rgba(0,0,0,.18)}
 .pindex small{color:var(--ink2);font-size:11.5px}
 .pindex .pinum{font-family:var(--serif);font-size:28px;font-weight:600;width:38px;text-align:center;color:var(--pacc)}
@@ -420,8 +420,8 @@ input[type=date].inp,input[type=time].inp{color-scheme:dark}
   radial-gradient(ellipse at 20% 0%,rgba(255,255,255,.55),transparent 55%),
   radial-gradient(ellipse at 100% 100%,color-mix(in srgb,var(--ink) 9%,transparent),transparent 60%),var(--pp)}
 .paper::after{content:"";position:absolute;inset:11px;border-radius:10px;border:1px solid var(--rule);pointer-events:none}
-.paper.turnL{animation:pgspin 14s linear infinite,turnL .38s ease-out}
-.paper.turnR{animation:pgspin 14s linear infinite,turnR .38s ease-out}
+.paperwrap.turnL{animation:turnL .38s ease-out}
+.paperwrap.turnR{animation:turnR .38s ease-out}
 @keyframes turnL{from{transform:rotateY(-14deg) translateX(30px);opacity:.3}to{transform:none;opacity:1}}
 @keyframes turnR{from{transform:rotateY(14deg) translateX(-30px);opacity:.3}to{transform:none;opacity:1}}
 .pcatlane{position:absolute;left:16px;right:16px;top:12px;height:54px;border-bottom:1px solid var(--rule);overflow:hidden;z-index:3;pointer-events:none}
@@ -445,7 +445,7 @@ input[type=date].inp,input[type=time].inp{color-scheme:dark}
 .pmoon{position:absolute;left:24px;top:30px;width:20px;height:20px;color:var(--pacc);opacity:.55}
 .pstar{position:absolute;color:var(--pacc);opacity:.6;font-size:11px}
 .phead{text-align:center;padding:16px 70px 0;color:var(--pacc)}
-.pscript.big{font-size:38px;line-height:1}
+.pscript.big{font-size:var(--pfs,31px);line-height:1.15}
 .psub{font-family:var(--serif);font-size:9px;letter-spacing:.28em;color:var(--ink2);margin-top:4px;white-space:nowrap}
 .prow2{display:grid;grid-template-columns:1.35fr 1fr;gap:8px;padding:8px 18px 0}
 .pfield{display:flex;align-items:center;gap:8px;border:1px solid var(--rule);border-radius:18px;padding:5px 10px;color:var(--ink)}
@@ -464,7 +464,7 @@ input[type=date].inp,input[type=time].inp{color-scheme:dark}
 .psched{grid-column:2;grid-row:span 2}
 .pnotes{grid-row:auto}
 .plearn{grid-column:1}
-.pquote{grid-column:1 / span 2;text-align:center;font-family:'Pinyon Script',var(--serif);font-size:18px;line-height:1.2;color:var(--pacc);display:flex;align-items:center;justify-content:center;gap:12px;padding-top:2px}
+.pquote{grid-column:1 / span 2;text-align:center;font-family:var(--pfont,'Petit Formal Script'),var(--serif);font-size:15px;line-height:1.2;color:var(--pacc);display:flex;align-items:center;justify-content:center;gap:12px;padding-top:2px}
 .pline{display:flex;align-items:center;gap:7px;min-height:25px;border-bottom:1px dashed var(--rule)}
 .pcirc{width:15px;height:15px;border-radius:50%;border:1.3px solid var(--ink2);flex-shrink:0;background:transparent;padding:0;display:inline-flex;align-items:center;justify-content:center}
 .pcirc.on{background:var(--pacc);border-color:var(--pacc)}
