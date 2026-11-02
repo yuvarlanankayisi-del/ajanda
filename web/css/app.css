@@ -411,7 +411,7 @@ input[type=date].inp,input[type=time].inp{color-scheme:dark}
 .pindex.today{padding:18px;justify-content:space-between}
 .pindex.today .pscript{font-size:30px;color:var(--pacc)}
 .pindex .pdate{flex:1;font-family:var(--serif);font-size:15px;color:var(--ink2)}
-.paperwrap{padding:6px 8px 20px;perspective:1200px}
+.paperwrap{padding:46px 8px 20px;perspective:1200px}
 @property --pg-a{syntax:'<angle>';inherits:false;initial-value:0deg}
 .paper{position:relative;border-radius:18px;padding:3px;background:conic-gradient(from var(--pg-a),var(--rule) 0deg,var(--rule) 260deg,color-mix(in srgb,var(--g1) 55%,transparent) 315deg,color-mix(in srgb,var(--g2) 45%,transparent) 340deg,var(--rule) 360deg);animation:pgspin 14s linear infinite;box-shadow:0 14px 40px rgba(0,0,0,.35)}
 @keyframes pgspin{to{--pg-a:360deg}}
@@ -502,8 +502,19 @@ input[type=date].inp,input[type=time].inp{color-scheme:dark}
 .dstrip button.sel{background:var(--ac2);color:var(--acTx);border-color:var(--ac2)}
 .dstrip button.sel small{color:var(--acTx)}
 
-.prealcat{position:absolute;right:14px;top:6px;width:66px;z-index:3;filter:drop-shadow(0 3px 4px rgba(0,0,0,.25));transform-origin:50% 100%;animation:catbreath 4.2s ease-in-out infinite}
+.prealcat-old{position:absolute;right:14px;top:6px;width:66px;z-index:3;filter:drop-shadow(0 3px 4px rgba(0,0,0,.25));transform-origin:50% 100%;animation:catbreath 4.2s ease-in-out infinite}
 @keyframes catbreath{0%,100%{transform:scale(1)}50%{transform:scale(1.012,1.022)}}
 .psave{font-family:var(--sans);font-size:12px;font-weight:700;border:1px solid var(--pacc);color:var(--pacc);background:transparent;border-radius:14px;padding:6px 12px;display:inline-flex;align-items:center;gap:4px;flex-shrink:0}
 .pfaces svg{width:22px;height:22px}
 .pcups svg{width:15px;height:19px}
+
+/* uyuyan siyam kedisi: kâğıdın üst kenarında yatıyor, bacağı ve kuyruğu sarkıyor */
+.paper>.kedi{position:absolute;right:4px;top:-45px;width:108px;aspect-ratio:400/441;z-index:4;pointer-events:none;filter:drop-shadow(0 3px 4px rgba(0,0,0,.28))}
+.kedi img{position:absolute;inset:0;width:100%;height:100%}
+.kedi .kb{transform-origin:50% 38%;animation:kbreath 4.6s ease-in-out infinite}
+.kedi .kt{transform-origin:88.7% 37.2%;animation:ktail 5.5s ease-in-out infinite alternate}
+.kedi .kl{transform-origin:50.4% 40.9%;animation:kleg 4.2s ease-in-out infinite alternate;animation-delay:-1.3s}
+@keyframes kbreath{0%,100%{transform:scale(1)}50%{transform:scale(1.008,1.018)}}
+@keyframes ktail{0%{transform:rotate(-5deg)}100%{transform:rotate(6deg)}}
+@keyframes kleg{0%{transform:rotate(-2.5deg)}100%{transform:rotate(3deg)}}
+.phead{padding-right:96px !important;padding-left:44px !important}

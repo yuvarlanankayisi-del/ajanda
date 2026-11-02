@@ -1,6 +1,7 @@
 name: APK üret
 on:
   push:
+    branches: [main]
     paths: ['app/**', 'web/**', 'build.gradle', 'settings.gradle', '.github/workflows/build.yml']
   workflow_dispatch: {}
 permissions:
