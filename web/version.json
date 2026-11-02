@@ -1,10 +1,12 @@
 {
- "version": 18,
+ "version": 19,
  "date": "02.11.2026",
- "notes": "Defter: Kaydet'te titreme yok, okunaklı el yazısı ve yazı tipi seçimi",
+ "notes": "Açılışta kış ya da sonbahar animasyonu (Ayarlar › Görünüm › Açılış animasyonu); plan defterinde uyuyan siyam kedisi",
  "files": [
   "css/app.css",
-  "img/cat.png",
+  "img/kedi_body.png",
+  "img/kedi_leg.png",
+  "img/kedi_tail.png",
   "img/logo.jpg",
   "index.html",
   "js/agenda.js",
@@ -14,6 +16,7 @@
   "js/goals.js",
   "js/habits.js",
   "js/home.js",
+  "js/intro.js",
   "js/journal.js",
   "js/misc.js",
   "js/notes.js",
