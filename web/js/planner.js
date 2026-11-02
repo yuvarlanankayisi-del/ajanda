@@ -105,7 +105,7 @@ Screens.page = {
     <div class="dstrip" id="dstrip">${strip.map(x => { const xd = U.parse(x), s = Planner.summary(x); return `<button class="${x === k ? 'sel' : ''} ${x === tk ? 'today' : ''}" data-a="pgGo" data-k="${x}" data-m="${U.months[xd.getMonth()]} ${xd.getFullYear()}"><small>${U.daysS[U.dow(x)]}</small><b>${xd.getDate()}</b><i style="background:${s.mood ? s.mood.c : s.n || s.wrote ? 'var(--ac)' : 'transparent'}"></i></button>`; }).join('')}</div>
     <div class="paperwrap ${p.dir ? 'turn' + p.dir : ''}" style="${Planner.vars()}">
      <div class="paper" style="${Screens.page._sc ? `transform:scale(${Screens.page._sc});transform-origin:top center` : ''}">
-      <img class="prealcat" src="img/cat.png" alt="" aria-hidden="true">
+      <div class="kedi" aria-hidden="true"><img class="kb" src="img/kedi_body.png" alt=""><img class="kl" src="img/kedi_leg.png" alt=""><img class="kt" src="img/kedi_tail.png" alt=""></div>
       <svg class="pmoon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3a9 9 0 1 0 6 13A7 7 0 1 1 15 3z" fill="currentColor"/></svg>
       <span class="pstar" style="left:9%;top:22px">✦</span><span class="pstar" style="left:22%;top:46px;font-size:8px">✦</span>
       <header class="phead"><button class="pscript big" data-a="pgFont" style="background:none;border:none;color:inherit;padding:0">Günlük Plan</button><div class="psub">HAYAL ET · PLANLA · BAŞAR</div></header>
