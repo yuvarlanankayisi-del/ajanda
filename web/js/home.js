@@ -127,7 +127,8 @@ Screens.home = {
       const multi = (h.target || 1) > 1;
       const val = multi ? S.habitCount(h, tk) : S.habitWeek(h, tk);
       const max = multi ? h.target : (h.weekly || 7);
-      return `<button class="li" data-a="habitInc" data-id="${h.id}">${U.ring(18, 3.5, val / max, h.color)}<span style="font-size:10px;font-weight:600;flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${U.esc(h.name)}</span><span style="font-size:9px" class="mu">${val}/${max}</span></button>`;
+      const today = S.habitDone(h, tk);
+      return `<button class="li" data-a="habitInc" data-id="${h.id}">${U.ring(18, 3.5, val / max, h.color)}<span style="font-size:10px;font-weight:600;flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${U.esc(h.name)}</span>${!multi && today ? `<span style="color:${h.color};display:flex">${ic('check', 11, 3)}</span>` : ''}<span style="font-size:9px" class="mu">${val}/${max}${multi ? '' : '<small style="font-size:7.5px"> hf</small>'}</span></button>`;
     }).join('') : '<button class="empty" data-a="go" data-to="habits" style="background:none;border:none;text-align:left">Alışkanlık ekle</button>';
 
     const md = moodOf(S.day(tk).mood);
@@ -181,7 +182,7 @@ Screens.home = {
           <div class="ct" style="align-self:stretch">${ic('chart', 13, 2)}<h2 style="font-size:14px">Hızlı Bakış</h2></div>
           ${U.ring(60, 5, ws.pct, 'var(--ac)', '%' + Math.round(ws.pct * 100), 18)}
           <b style="font-size:10.5px">Bu hafta</b>
-          <small class="mu" style="font-size:9.5px">${ws.done} / ${ws.total} tamamlandı</small>
+          <small class="mu" style="font-size:9px;text-align:center;line-height:1.35">Görev ${ws.tD}/${ws.tT}<br>Alışkanlık ${ws.hD}/${ws.hT}</small>
           <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;width:100%">${segs}</div>
         </section>
         <section class="card col" style="gap:7px" aria-label="Okuduğum">
@@ -213,7 +214,13 @@ Screens.home = {
     newTask() { TaskSheet.open(null, { date: U.today() }); },
     nextQuote() { S.set.quoteIdx = (S.set.quoteIdx || 0) + 1; S.touch(); },
     moodPick(t) { MoodSheet.open(t.dataset.k); },
-    habitInc(t) { const h = S.db.habits.find(x => x.id === t.dataset.id); if (h) S.habitInc(h, U.today()); },
+    habitInc(t) {
+      const h = S.db.habits.find(x => x.id === t.dataset.id); if (!h) return;
+      const tk = U.today(), was = S.habitDone(h, tk);
+      S.habitInc(h, tk);
+      const multi = (h.target || 1) > 1, c = S.habitCount(h, tk);
+      U.toast(multi ? `${h.name}: bugün ${c}/${h.target} ${h.unit || ''}` : (was ? `${h.name}: bugünkü işaret kaldırıldı` : `${h.name}: bugün yapıldı ✓ · bu hafta ${S.habitWeek(h, tk)}/${h.weekly || 7}`));
+    },
     addBook() { BookSheet.open(); },
     carry() { CarrySheet.open(); },
     editShortcuts() { ShortcutSheet.open(); },

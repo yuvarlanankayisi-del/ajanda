@@ -264,16 +264,21 @@ const S = {
   water() { return S.db.habits.find(h => h.kind === 'water'); },
 
   /* ===== istatistik ===== */
+  /* günün skoru: o güne kadar olan görevler + alışkanlıklar (gelecek günler sayılmaz) */
   dayScore(k) {
+    if (k > U.today()) return { total: 0, done: 0, tT: 0, tD: 0, hT: 0, hD: 0, pct: 0 };
     const ts = S.tasksOn(k, { kind: 'task' });
-    let total = ts.length, done = ts.filter(t => S.isDone(t, k)).length;
-    if (k <= U.today()) for (const h of S.db.habits) { if (h.archived) continue; total++; if (S.habitDone(h, k)) done++; }
-    return { total, done, pct: total ? done / total : 0 };
+    const tT = ts.length, tD = ts.filter(t => S.isDone(t, k)).length;
+    let hT = 0, hD = 0;
+    for (const h of S.db.habits) { if (h.archived || (h.created && U.key(new Date(h.created)) > k)) continue; hT++; if (S.habitDone(h, k)) hD++; }
+    const total = tT + hT, done = tD + hD;
+    return { total, done, tT, tD, hT, hD, pct: total ? done / total : 0 };
   },
   weekScore(k) {
     const days = U.weekDays(k || U.today()).map(d => Object.assign({ k: d }, S.dayScore(d)));
-    const total = days.reduce((a, d) => a + d.total, 0), done = days.reduce((a, d) => a + d.done, 0);
-    return { days, total, done, pct: total ? done / total : 0 };
+    const sum = f => days.reduce((a, d) => a + d[f], 0);
+    const total = sum('total'), done = sum('done');
+    return { days, total, done, tT: sum('tT'), tD: sum('tD'), hT: sum('hT'), hD: sum('hD'), pct: total ? done / total : 0 };
   },
 
   /* ===== notlar ===== */

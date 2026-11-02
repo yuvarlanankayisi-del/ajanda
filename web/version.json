@@ -1,7 +1,7 @@
 {
- "version": 14,
+ "version": 15,
  "date": "02.11.2026",
- "notes": "Defter sayfasında kaydırılabilir tarih şeridi, siyam kedisi yürüyüp uyuyor",
+ "notes": "Hızlı Bakış açıklamalı, alışkanlık işaretleme geri bildirimi",
  "files": [
   "css/app.css",
   "img/logo.jpg",
