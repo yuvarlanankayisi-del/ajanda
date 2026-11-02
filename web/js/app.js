@@ -30,6 +30,7 @@ const App = {
     App.go(st, {}, { reset: true });
     if (S.set.lock && S.set.lock.on) Lock.show();
     App.lastDay = U.today();
+    try { Screens.pomodoro.finishIfDone(); } catch (e) { }
     setTimeout(App.checkOpen, 350);
     setTimeout(() => {
       Notify.push();
@@ -49,6 +50,7 @@ const App = {
   },
 
   resume() {
+    try { Screens.pomodoro.finishIfDone(); } catch (e) { }
     if (S.set.lock && S.set.lock.on && App.pausedAt && Date.now() - App.pausedAt > 60000) Lock.show();
     if (App.lastDay !== U.today()) { App.lastDay = U.today(); App.refresh(); }
     Notify.push();

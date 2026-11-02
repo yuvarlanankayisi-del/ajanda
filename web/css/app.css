@@ -378,3 +378,9 @@ input[type=date].inp,input[type=time].inp{color-scheme:dark}
 .vitem:nth-child(even){transform:rotate(1.2deg)}
 .vitem img{width:100%;display:block;border-radius:3px}
 .vitem span{display:block;font-family:var(--serif);font-style:italic;font-size:15px;color:#3A2328;margin-top:6px;line-height:1.2}
+
+/* ===== Ders ===== */
+.exam{display:flex;gap:12px;align-items:center;padding:12px;border-radius:16px;background:var(--card);border:1px solid var(--line);color:var(--tx);width:100%}
+.ecd{width:54px;height:54px;border-radius:14px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ecd b{font-family:var(--serif);font-size:24px;line-height:1}
+.ecd small{font-size:10px;font-weight:700}

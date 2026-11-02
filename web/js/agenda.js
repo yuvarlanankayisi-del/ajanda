@@ -253,6 +253,8 @@ const TaskSheet = {
         ${!f.time && f.remind != null ? '<small class="mu">Saat seçilmediği için hatırlatma sabah 09:00\'a göre yapılır.</small>' : ''}</div>
       <div class="field"><label>Tekrar</label><div class="opts">${REPEATS.map(r => `<button class="${f.repeat === r.v ? 'on' : ''}" data-a="tsRep" data-v="${r.v}">${r.l}</button>`).join('')}</div></div>
       <div class="field"><label>Kategori</label><div class="opts">${S.set.categories.map(c => `<button class="${f.cat === c.id ? 'on' : ''}" data-a="tsCat" data-v="${c.id}"><span class="cdot" style="background:${c.color};margin-right:6px"></span>${U.esc(c.name)}</button>`).join('')}<button data-a="tsNewCat">${ic('plus', 14)} Yeni</button></div></div>
+      ${(S.db.courses || []).length ? `<div class="field"><label>Ders (isteğe bağlı)</label><div class="opts"><button class="${!f.course ? 'on' : ''}" data-a="tsCourse" data-v="">Yok</button>${S.db.courses.map(c => `<button class="${f.course === c.id ? 'on' : ''}" data-a="tsCourse" data-v="${c.id}"><span class="cdot" style="background:${c.color};margin-right:6px"></span>${U.esc(c.name)}</button>`).join('')}</div>
+        ${f.course ? `<div class="opts" style="margin-top:4px"><button class="${!f.exam ? 'on' : ''}" data-a="tsExam" data-v="0">Ödev / çalışma</button><button class="${f.exam ? 'on' : ''}" data-a="tsExam" data-v="1">Sınav</button></div>` : ''}</div>` : ''}
       <div class="field"><label>Not</label><textarea class="inp grow" id="tsNote" rows="2" placeholder="İsteğe bağlı" style="min-height:0">${U.esc(f.note || '')}</textarea></div>
       <div class="row">${!isNew && !S.isDone(task, App.agendaDate || task.date) ? '<button class="btn ghost sp" data-a="tsPost">' + ic('clock', 18) + ' Ertele</button>' : ''}<button class="btn sp" data-a="tsSave">${isNew ? 'Ekle' : 'Kaydet'}</button></div>`;
     const grab = () => {
@@ -268,6 +270,8 @@ const TaskSheet = {
         tsRem: b => { f.remind = b.dataset.v === 'null' ? null : +b.dataset.v; f._remTouched = true; redraw(); },
         tsRep: b => { f.repeat = b.dataset.v; redraw(); },
         tsCat: b => { f.cat = b.dataset.v; redraw(); },
+        tsCourse: b => { f.course = b.dataset.v || null; if (f.course) f.cat = 'ders'; else f.exam = false; redraw(); },
+        tsExam: b => { f.exam = b.dataset.v === '1'; if (f.exam) { f.kind = 'event'; if (f.remind == null) f.remind = 1440; } redraw(); },
         tsTimeCh: () => { if (rec.sh.querySelector('#tsTime').value && f.remind == null && !f._remTouched) { f.remind = 0; redraw(); } },
         tsNoTime: () => { rec.sh.querySelector('#tsTime').value = ''; redraw(); },
         tsNewCat: async () => { grab(); const c = await CatSheet.create(); if (c) f.cat = c.id; App.setSheet(rec, draw()); },
@@ -280,8 +284,8 @@ const TaskSheet = {
           if (!f.title.trim()) { U.toast('Bir başlık yaz'); return; }
           const data = { title: f.title.trim(), kind: f.kind, date: f.date, time: f.time, remind: f.remind, repeat: f.repeat, cat: f.cat, note: f.note.trim(), updated: Date.now() };
           if (f.goal) data.goal = f.goal;
-          if (f.course) data.course = f.course;
-          if (f.exam) data.exam = true;
+          data.course = f.course || null;
+          data.exam = !!(f.course && f.exam);
           if (isNew) S.newTask(data); else { Object.assign(task, data); S.touch(); }
           App.closeSheet(rec);
           if (f.remind != null && N && !Notify.allowed()) { if (await App.confirm('Hatırlatma için bildirim izni gerekiyor. İzin verelim mi?', 'İzin ver')) Notify.ask(); }

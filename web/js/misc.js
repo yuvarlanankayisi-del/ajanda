@@ -42,6 +42,7 @@ Screens.search = {
       const days = Object.entries(S.db.days).filter(([k, d]) => has(d.journal) || has(d.best) || has(d.note) || (d.gratitude || []).some(has) || (d.learned || []).some(has)).sort((a, b) => a[0] < b[0] ? 1 : -1).slice(0, 30);
       const habits = S.db.habits.filter(h => has(h.name));
       const books = S.db.books.filter(b => has(b.title) || has(b.author) || has(b.comment));
+      const courses = (S.db.courses || []).filter(c => has(c.name) || has(c.note) || (c.topics || []).some(x => has(x.v)));
       const goals = (S.db.goals || []).filter(g => has(g.title) || has(g.why) || (g.steps || []).some(x => has(x.v)));
       const snip = s => { s = s || ''; const i = s.toLocaleLowerCase('tr-TR').indexOf(q); if (i < 0) return U.esc(s.slice(0, 80)); const a = Math.max(0, i - 30); return (a ? '…' : '') + U.esc(s.slice(a, i)) + '<b style="color:var(--ac)">' + U.esc(s.slice(i, i + q.length)) + '</b>' + U.esc(s.slice(i + q.length, i + q.length + 50)); };
       const grp = (title, icon, items) => items.length ? `<div class="lbl" style="margin-top:6px">${title} · ${items.length}</div><div class="set">${items.join('')}</div>` : '';
@@ -49,6 +50,7 @@ Screens.search = {
         + grp('Notlar', 'note', notes.map(n => `<button data-a="sNote" data-id="${n.id}">${ic('note', 20)}<span class="sp">${U.esc(n.title || 'Başlıksız not')}<small>${snip(has(n.title) ? '' : S.noteText(n)) || (n.tags || []).map(t => '#' + t).join(' ')}</small></span></button>`))
         + grp('Günlük ve günler', 'journal', days.map(([k, d]) => `<button data-a="sDay" data-k="${k}">${ic('journal', 20)}<span class="sp">${U.fmt(k, 'long')}<small>${snip([d.best, d.journal, d.note, (d.gratitude || []).join(' · '), (d.learned || []).join(' · ')].find(has))}</small></span></button>`))
         + grp('Alışkanlıklar', 'target', habits.map(h => `<button data-a="go" data-to="habit" data-p='{"id":"${h.id}"}'>${ic('target', 20)}<span class="sp">${snip(h.name)}</span></button>`))
+        + grp('Dersler', 'cap', courses.map(c => `<button data-a="go" data-to="course" data-p='{"id":"${c.id}"}'>${ic('cap', 20)}<span class="sp">${snip(c.name)}<small>${snip(has(c.name) ? '' : [(c.topics || []).map(x => x.v).join(' · '), c.note].find(has))}</small></span></button>`))
         + grp('Hedefler', 'flag', goals.map(g => `<button data-a="go" data-to="goal" data-p='{"id":"${g.id}"}'>${ic('flag', 20)}<span class="sp">${snip(g.title)}<small>%${Math.round(S.goalPct(g) * 100)}${g.done ? ' · tamamlandı' : ''}</small></span></button>`))
         + grp('Kitaplar', 'book', books.map(b => `<button data-a="sBook" data-id="${b.id}">${ic('book', 20)}<span class="sp">${snip(b.title)}<small>${U.esc(b.author || '')}</small></span></button>`));
       if (!res) res = `<p class="mu" style="text-align:center;padding:30px 0">"${U.esc(p.q)}" için sonuç bulunamadı.</p>`;
@@ -84,6 +86,7 @@ Screens.pomodoro = {
       if ((s.pomoMode || 'focus') === 'focus') {
         const k = U.today(), d = S.day(k, true);
         S.setDay(k, 'focus', (d.focus || 0) + (s.pomoLen || 25));
+        if (s.pomoCourse) { const fb = Object.assign({}, d.focusBy || {}); fb[s.pomoCourse] = (fb[s.pomoCourse] || 0) + (s.pomoLen || 25); S.setDay(k, 'focusBy', fb); }
         S.setDay(k, 'sessions', (d.sessions || 0) + 1);
       }
       s.pomoEnd = 0; s.pomoLeft = 0; S.saveSync();
@@ -113,6 +116,7 @@ Screens.pomodoro = {
           <button class="btn ghost" data-a="pReset" style="width:56px;height:56px;border-radius:50%">${ic('stop', 22)}</button>
           <button class="btn" data-a="pToggle" style="width:76px;height:76px;border-radius:50%">${running ? ic('pause', 30, 2.4) : icf('play', 30)}</button>
           <span style="width:56px"></span></div>
+        ${(S.db.courses || []).length ? `<div class="chips" style="align-self:stretch;justify-content:center;flex-wrap:wrap"><button class="chip ${!S.sync.pomoCourse ? 'on' : ''}" data-a="pCourse" data-v="">Genel</button>${S.db.courses.map(c => `<button class="chip ${S.sync.pomoCourse === c.id ? 'on' : ''}" data-a="pCourse" data-v="${c.id}"><i style="background:${c.color}"></i>${U.esc(c.name)}</button>`).join('')}</div>` : ''}
         <div class="card row" style="gap:14px;align-self:stretch">${ic('flame', 22)}<span class="sp">Bugün <b>${d.sessions || 0}</b> oturum · <b>${d.focus || 0}</b> dk odak</span></div>
         <p class="mu" style="font-size:12px;text-align:center;margin:0">Süre bitince telefonun bildirim gönderir, uygulamayı kapatabilirsin.</p>
       </div></div>`;
@@ -138,6 +142,7 @@ Screens.pomodoro = {
       else { s.pomoEnd = Date.now() + (st.left || st.len * 60) * 1000; s.pomoLeft = 0; s.pomoMode = st.mode; s.pomoLen = st.len; s.pomoMsg = st.mode === 'focus' ? 'Çalışma oturumu bitti, kısa bir mola ver.' : 'Mola bitti, hazırsan devam.'; if (N && !Notify.allowed()) Notify.ask(); }
       S.saveSync(); Notify.push(); App.forceRefresh();
     },
+    pCourse(t) { if (S.sync.pomoEnd > Date.now()) return U.toast('Önce sayacı durdur'); S.sync.pomoCourse = t.dataset.v || null; S.saveSync(); App.forceRefresh(); },
     pReset() { const s = S.sync; s.pomoEnd = 0; s.pomoLeft = 0; S.saveSync(); Notify.push(); App.forceRefresh(); }
   }
 };

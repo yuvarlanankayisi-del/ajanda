@@ -36,7 +36,7 @@ const SECTIONS = [
   { k: 'books', n: 'Kitap · Dizi · Film', i: 'film', to: 'books', g: 2, d: 'Okuma listesi, ilerleme' },
   { k: 'focus', n: 'Odak Sayacı', i: 'timer', to: 'pomodoro', g: 2, d: 'Pomodoro ile çalışma' },
   { k: 'goals', n: 'Hedefler', i: 'flag', to: 'goals', g: 2, d: 'Yıllık, aylık hedefler, hayal panosu' },
-  { k: 'study', n: 'Ders ve Çalışma', i: 'cap', g: 2, d: 'Dersler, sınavlar, ödevler' },
+  { k: 'study', n: 'Ders ve Çalışma', i: 'cap', to: 'study', g: 2, d: 'Dersler, sınavlar, ödevler' },
   { k: 'cycle', n: 'Döngüm', i: 'drop', g: 2, d: 'Takvimden ayrı takip' },
   { k: 'special', n: 'Özel Günler', i: 'gift', g: 2, d: 'Doğum günleri, geri sayım' },
   { k: 'score', n: 'Aylık Değerlendirme', i: 'chart', g: 2, d: 'Puanlar ve grafikler' },
