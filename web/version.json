@@ -1,9 +1,10 @@
 {
- "version": 15,
+ "version": 16,
  "date": "02.11.2026",
- "notes": "Hızlı Bakış açıklamalı, alışkanlık işaretleme geri bildirimi",
+ "notes": "Defter sayfası: yazılanlar kaybolmuyor, Kaydet düğmesi, tek ekrana sığıyor, gerçekçi siyam kedisi",
  "files": [
   "css/app.css",
+  "img/cat.png",
   "img/logo.jpg",
   "index.html",
   "js/agenda.js",

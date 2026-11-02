@@ -83,7 +83,7 @@ Screens.planner = {
 };
 
 /* ---------- kâğıt gün sayfası ---------- */
-const HOURS = ['06', '08', '10', '12', '14', '16', '18', '20', '22'];
+const HOURS = ['08', '10', '12', '14', '16', '18', '20', '22'];
 Screens.page = {
   nav: 'agenda', noNav: false,
   render(p) {
@@ -95,7 +95,7 @@ Screens.page = {
     const learned = d.learned || ['', '', ''];
     const sched = d.sched || {};
     const qi = (Math.floor(U.parse(k).getTime() / 86400000)) % QUOTES.length;
-    const empty = Math.max(0, 7 - tasks.length);
+    const empty = Math.max(1, 5 - tasks.length);
     const slotOf = t => { const h = +t.time.slice(0, 2); let best = HOURS[0]; for (const x of HOURS) if (+x <= h) best = x; return best; };
     const strip = []; for (let i = -120; i <= 21; i++) strip.push(U.addDays(tk, i));
     return `<div class="topbar" style="padding-top:14px;padding-bottom:2px"><button class="icbtn box" data-a="back">${ic('back', 20, 1.8)}</button>
@@ -104,36 +104,35 @@ Screens.page = {
     <div class="dstrip" id="dstrip">${strip.map(x => { const xd = U.parse(x), s = Planner.summary(x); return `<button class="${x === k ? 'sel' : ''} ${x === tk ? 'today' : ''}" data-a="pgGo" data-k="${x}" data-m="${U.months[xd.getMonth()]} ${xd.getFullYear()}"><small>${U.daysS[U.dow(x)]}</small><b>${xd.getDate()}</b><i style="background:${s.mood ? s.mood.c : s.n || s.wrote ? 'var(--ac)' : 'transparent'}"></i></button>`; }).join('')}</div>
     <div class="paperwrap" style="${Planner.vars()}">
      <div class="paper ${p.dir ? 'turn' + p.dir : ''}">
-      <div class="pcatlane">${p.catSlept ? CAT_SLEEP.replace('class="pcat sleep"', 'class="pcat sleep" style="left:calc(100% - 96px)"') : CAT_WALK}</div>
+      <img class="prealcat" src="img/cat.png" alt="" aria-hidden="true">
       <svg class="pmoon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3a9 9 0 1 0 6 13A7 7 0 1 1 15 3z" fill="currentColor"/></svg>
-      <span class="pstar" style="left:12%;top:76px">✦</span><span class="pstar" style="right:20%;top:96px;font-size:9px">✦</span><span class="pstar" style="left:24%;top:118px;font-size:8px">✦</span>
+      <span class="pstar" style="left:9%;top:22px">✦</span><span class="pstar" style="left:22%;top:46px;font-size:8px">✦</span>
       <header class="phead"><div class="pscript big">Günlük Plan</div><div class="psub">HAYAL ET · PLANLA · BAŞAR</div></header>
-      <div class="prow2"><div class="pfield"><span>AY</span><b>${U.months[dt.getMonth()]}</b></div><div class="pfield"><span>TARİH</span><b>${U.pad(dt.getDate())} / ${U.pad(dt.getMonth() + 1)} / ${dt.getFullYear()}</b></div></div>
-      <div class="pday">${U.days[U.dow(k)]}${k === tk ? ' · bugün' : ' · ' + U.rel(k).toLocaleLowerCase('tr-TR')}</div>
+      <div class="prow2"><div class="pfield"><span>TARİH</span><b>${U.pad(dt.getDate())} ${U.months[dt.getMonth()]} ${dt.getFullYear()}</b></div><div class="pfield" style="justify-content:center"><b style="font-style:italic;font-weight:500">${U.days[U.dow(k)]}${k === tk ? ' · bugün' : ''}</b></div></div>
 
       <div class="pgrid">
         <section class="pbox ptodo"><h3>${ORN}<span>YAPILACAKLAR</span></h3>
           ${tasks.map(t => { const dn = S.isDone(t, k); return `<div class="pline ${dn ? 'done' : ''}"><button class="pcirc ${dn ? 'on' : ''}" data-a="pgTgl" data-id="${t.id}" aria-label="Tamamla"></button><button class="ptxt" data-a="pgEdit" data-id="${t.id}">${t.time ? `<i>${t.time}</i> ` : ''}${U.esc(t.title)}</button></div>`; }).join('')}
-          ${Array.from({ length: empty }, (_, i) => `<div class="pline"><span class="pcirc"></span><input class="pin" data-new="1" placeholder="${i === 0 && !tasks.length ? 'Yazmak için dokun…' : ''}" enterkeyhint="done"></div>`).join('')}
-          ${empty === 0 ? `<div class="pline"><span class="pcirc"></span><input class="pin" data-new="1" placeholder="+ ekle" enterkeyhint="done"></div>` : ''}
+          ${Array.from({ length: empty }, (_, i) => `<div class="pline"><span class="pcirc"></span><input class="pin" data-new="1" data-k="${k}" placeholder="${i === 0 && !tasks.length ? 'Yazmak için dokun…' : ''}" enterkeyhint="done"></div>`).join('')}
+          ${empty === 0 ? `<div class="pline"><span class="pcirc"></span><input class="pin" data-new="1" data-k="${k}" placeholder="+ ekle" enterkeyhint="done"></div>` : ''}
         </section>
         <div class="pcol">
           <section class="pbox"><h3><span>RUH HÂLİ</span></h3><div class="pfaces">${FACES.map(f => `<button data-a="pgMood" data-v="${f.v}" class="${d.mood === f.v ? 'on' : ''}" aria-label="${(moodOf(f.v) || {}).l}"><svg viewBox="0 0 24 24" width="26" height="26"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.3"/><circle cx="9.3" cy="10" r=".9" fill="currentColor"/><circle cx="14.7" cy="10" r=".9" fill="currentColor"/><path d="${f.d}" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button>`).join('')}</div></section>
           <section class="pbox"><h3><span>SU</span></h3><div class="pcups">${Array.from({ length: wt }, (_, i) => `<button data-a="pgWater" data-n="${i + 1}" class="${i < wc ? 'on' : ''}" aria-label="${i + 1}. bardak"><svg viewBox="0 0 20 24" width="18" height="22"><path d="M3 3h14l-2 18H5z" fill="${i < wc ? 'currentColor' : 'none'}" fill-opacity=".35" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>${i < wc ? '' : '<path d="M8.5 11c1-1.5 2-1.5 3 0" fill="none" stroke="currentColor" stroke-width=".9"/>'}</svg></button>`).join('')}</div></section>
           <section class="pbox"><h3>${ORN}<span>HARCAMA</span></h3>
             ${exps.map((e, i) => `<div class="pexp"><span class="sp">${U.esc(e.d || '—')}</span><b>${(+e.a || 0).toLocaleString('tr-TR')} ₺</b><button data-a="pgExpDel" data-i="${i}" aria-label="Sil">×</button></div>`).join('')}
-            <div class="pexp add"><input class="pin" id="exD" placeholder="ne için?"><input class="pin" id="exA" placeholder="₺" inputmode="decimal" style="width:52px;text-align:right" enterkeyhint="done"></div>
+            <div class="pexp add"><input class="pin" id="exD" placeholder="ne için?"><input class="pin" id="exA" data-k="${k}" placeholder="₺" inputmode="decimal" style="width:52px;text-align:right" enterkeyhint="done"></div>
             ${exps.length ? `<div class="pexp tot"><span class="sp">Toplam</span><b>${total.toLocaleString('tr-TR')} ₺</b></div>` : ''}
           </section>
         </div>
         <section class="pbox pnotes"><span class="pseal" aria-hidden="true"><svg viewBox="0 0 40 52"><path d="M14 30 L8 50 L16 45 L20 51 L22 32 Z M26 30 L32 50 L24 45 L20 51 L18 32 Z" fill="var(--pacc)" opacity=".85"/><circle cx="20" cy="20" r="15" fill="var(--pacc)"/><circle cx="20" cy="20" r="11" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1"/><path d="M20 12c1.5 3 4 4 4 7a4 4 0 0 1-8 0c0-3 2.5-4 4-7zM14 25h12" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.2" stroke-linecap="round"/></svg></span>
-          <h3>${ORN}<span>NOTLAR</span></h3><textarea class="pnote grow" rows="6" data-in="pgField" data-f="note" placeholder="Aklındakiler…">${U.esc(d.note || '')}</textarea></section>
+          <h3>${ORN}<span>NOTLAR</span></h3><textarea class="pnote grow" rows="4" data-in="pgField" data-f="note" data-k="${k}" placeholder="Aklındakiler…">${U.esc(d.note || '')}</textarea></section>
         <section class="pbox psched"><h3><span>PROGRAM</span></h3>
-          ${HOURS.map(h => { const ts = tasks.filter(t => t.time && slotOf(t) === h); return `<div class="pslot"><span>${h}:00</span><div class="sp">${ts.map(t => `<button class="ptag ${S.isDone(t, k) ? 'done' : ''}" data-a="pgEdit" data-id="${t.id}">${t.time} ${U.esc(t.title)}</button>`).join('')}<input class="pin" data-in="pgSched" data-h="${h}" value="${U.esc(sched[h] || '')}"></div></div>`; }).join('')}
+          ${HOURS.map(h => { const ts = tasks.filter(t => t.time && slotOf(t) === h); return `<div class="pslot"><span>${h}:00</span><div class="sp">${ts.map(t => `<button class="ptag ${S.isDone(t, k) ? 'done' : ''}" data-a="pgEdit" data-id="${t.id}">${t.time} ${U.esc(t.title)}</button>`).join('')}<input class="pin" data-in="pgSched" data-h="${h}" data-k="${k}" value="${U.esc(sched[h] || '')}"></div></div>`; }).join('')}
         </section>
         <section class="pbox plearn"><h3><span>ÖĞRENDİĞİM 3 ŞEY</span></h3>
-          ${[0, 1, 2].map(i => `<div class="pnum"><span>${i + 1}.</span><input class="pin" data-in="pgLearn" data-i="${i}" value="${U.esc(learned[i] || '')}"></div>`).join('')}</section>
-        <div class="pquote">${U.esc(QUOTES[qi])}<span class="pstar" style="position:static;display:block;margin-top:6px">✦</span></div>
+          ${[0, 1, 2].map(i => `<div class="pnum"><span>${i + 1}.</span><input class="pin" data-in="pgLearn" data-i="${i}" data-k="${k}" value="${U.esc(learned[i] || '')}"></div>`).join('')}</section>
+        <div class="pquote">${U.esc(QUOTES[qi])}<button class="psave" data-a="pgSave">${ic('check', 14, 2.4)} Kaydet</button></div>
       </div>
      </div>
     </div>`;
@@ -142,36 +141,30 @@ Screens.page = {
     App.growAll(el);
     delete p.dir;
     const ds = el.querySelector('#dstrip'), sel = ds && ds.querySelector('.sel');
-    if (sel) ds.scrollLeft = sel.offsetLeft - ds.clientWidth / 2 + sel.offsetWidth / 2;
+    if (sel) { ds.style.scrollBehavior = 'auto'; ds.scrollLeft = sel.offsetLeft - ds.clientWidth / 2 + sel.offsetWidth / 2; requestAnimationFrame(() => { ds.style.scrollBehavior = ''; }); }
     if (ds) ds.addEventListener('scroll', U.debounce(() => {
       const mid = ds.scrollLeft + ds.clientWidth / 2; let best = null;
       ds.querySelectorAll('button').forEach(b => { if (!best || Math.abs(b.offsetLeft + b.offsetWidth / 2 - mid) < Math.abs(best.offsetLeft + best.offsetWidth / 2 - mid)) best = b; });
       const m = el.querySelector('#stripM'); if (best && m) m.textContent = best.dataset.m;
     }, 80));
-    const cat = el.querySelector('.pcat:not(.sleep)');
-    if (cat) {
-      const lane = cat.parentNode;
-      clearTimeout(Screens.page._catT);
-      Screens.page._catT = setTimeout(() => {
-        cat.style.transition = 'left 17s linear'; cat.style.left = (lane.clientWidth - 96) + 'px';
-        cat.addEventListener('transitionend', () => {
-          if (App.cur.entry.name !== 'page') return;
-          p.catSlept = true;
-          lane.innerHTML = CAT_SLEEP.replace('class="pcat sleep"', 'class="pcat sleep enter" style="left:' + (lane.clientWidth - 96) + 'px"');
-        }, { once: true });
-      }, 600);
-    }
+    setTimeout(() => Screens.page.fit(el), 30);
     const k = p.k;
     el.querySelectorAll('input[data-new]').forEach(inp => inp.addEventListener('keydown', e => {
       if (e.key !== 'Enter' || !inp.value.trim()) return;
-      S.newTask({ title: inp.value.trim(), date: k }); inp.blur(); App.forceRefresh();
+      const v = inp.value.trim(); inp.value = ''; S.newTask({ title: v, date: inp.dataset.k || k }); inp.blur(); App.forceRefresh();
       setTimeout(() => { const n = document.querySelector('input[data-new]'); if (n) n.focus(); }, 60);
+    }));
+    el.querySelectorAll('input[data-new]').forEach(inp => inp.addEventListener('blur', () => {
+      const v = inp.value.trim(); if (!v) return;
+      inp.value = ''; S.newTask({ title: v, date: inp.dataset.k || k });
+      setTimeout(() => { if (App.cur.entry.name === 'page' && !(document.activeElement && document.activeElement.tagName === 'INPUT')) App.forceRefresh(); }, 120);
     }));
     const exA = el.querySelector('#exA'), exD = el.querySelector('#exD');
     const addExp = () => {
       const a = parseFloat((exA.value || '').replace(',', '.'));
       if (!a) return;
-      const dd = S.day(k, true); S.setDay(k, 'expenses', (dd.expenses || []).concat({ d: exD.value.trim(), a, cat: '' }));
+      const desc = exD.value.trim(); exA.value = ''; exD.value = '';
+      const dd = S.day(k, true); S.setDay(k, 'expenses', (dd.expenses || []).concat({ d: desc, a, cat: '' }));
       exA.blur(); App.forceRefresh(); setTimeout(() => { const x = document.getElementById('exD'); if (x) x.focus(); }, 60);
     };
     if (exA) { exA.addEventListener('keydown', e => { if (e.key === 'Enter') addExp(); }); exD.addEventListener('keydown', e => { if (e.key === 'Enter') exA.focus(); }); exA.addEventListener('blur', () => { if (exA.value) addExp(); }); }
@@ -184,17 +177,48 @@ Screens.page = {
       if (Math.abs(dx) > 70 && Math.abs(dy) < 50) Screens.page.acts.pgShift({ dataset: { n: dx < 0 ? 1 : -1 } });
     }, { passive: true });
   },
+  /* sayfadan çıkarken ya da Kaydet'e basınca yarım kalan yazıları kaydet */
+  flush() {
+    const el = document.getElementById('screen');
+    el.querySelectorAll('input[data-new]').forEach(i => { if (i.value.trim()) { S.newTask({ title: i.value.trim(), date: i.dataset.k }); i.value = ''; } });
+    el.querySelectorAll('[data-in^="pg"]').forEach(i => {
+      const k = i.dataset.k; if (!k) return;
+      const d = S.day(k, true);
+      if (i.dataset.in === 'pgField') d[i.dataset.f] = i.value;
+      else if (i.dataset.in === 'pgSched') { d.sched = Object.assign({}, d.sched || {}); d.sched[i.dataset.h] = i.value; }
+      else if (i.dataset.in === 'pgLearn') { d.learned = (d.learned || ['', '', '']).slice(); d.learned[+i.dataset.i] = i.value; }
+      d.updated = Date.now();
+    });
+    const exA = el.querySelector('#exA'), exD = el.querySelector('#exD');
+    const amt = exA ? parseFloat((exA.value || '').replace(',', '.')) : 0;
+    if (amt) { const d = S.day(exA.dataset.k, true); d.expenses = (d.expenses || []).concat({ d: exD.value.trim(), a: amt, cat: '' }); d.updated = Date.now(); exA.value = ''; }
+    S.touch({ quiet: true }); S.saveNow();
+  },
+  leave() { Screens.page.flush(); },
+  /* kâğıdı ekrana sığdır */
+  fit(el) {
+    const wrap = el.querySelector('.paperwrap'), paper = el.querySelector('.paper'); if (!wrap || !paper) return;
+    paper.style.transform = ''; wrap.style.height = '';
+    const avail = window.innerHeight - wrap.getBoundingClientRect().top - 84;
+    const h = paper.offsetHeight;
+    if (h > avail) {
+      const sc = Math.max(0.8, avail / h);
+      paper.style.transform = `scale(${sc})`; paper.style.transformOrigin = 'top center';
+      wrap.style.height = (h * sc + 14) + 'px';
+    }
+  },
   acts: {
-    pgGo(t) { const p = App.cur.entry.params; const nk = t.dataset.k; if (nk === p.k) return; p.dir = nk > p.k ? 'L' : 'R'; p.k = nk; App.forceRefresh(); },
-    pgToday() { const p = App.cur.entry.params; const tk = U.today(); if (p.k === tk) return; p.dir = tk > p.k ? 'L' : 'R'; p.k = tk; App.forceRefresh(); },
-    pgShift(t) { const p = App.cur.entry.params; const n = +t.dataset.n; p.k = U.addDays(p.k, n); p.dir = n > 0 ? 'L' : 'R'; App.forceRefresh(); document.getElementById('screen').scrollTop = 0; },
+    pgSave() { Screens.page.flush(); U.vibrate(15); U.toast('Kaydedildi ✓'); App.forceRefresh(); },
+    pgGo(t) { Screens.page.flush(); const p = App.cur.entry.params; const nk = t.dataset.k; if (nk === p.k) return; p.dir = nk > p.k ? 'L' : 'R'; p.k = nk; App.forceRefresh(); },
+    pgToday() { Screens.page.flush(); const p = App.cur.entry.params; const tk = U.today(); if (p.k === tk) return; p.dir = tk > p.k ? 'L' : 'R'; p.k = tk; App.forceRefresh(); },
+    pgShift(t) { Screens.page.flush(); const p = App.cur.entry.params; const n = +t.dataset.n; p.k = U.addDays(p.k, n); p.dir = n > 0 ? 'L' : 'R'; App.forceRefresh(); document.getElementById('screen').scrollTop = 0; },
     pgTgl(t) { const x = S.db.tasks.find(y => y.id === t.dataset.id); if (x) { S.toggle(x, App.cur.params.k); App.forceRefresh(); } },
     pgEdit(t) { const x = S.db.tasks.find(y => y.id === t.dataset.id); if (x) TaskSheet.open(x); },
     pgMood(t) { const k = App.cur.params.k, v = +t.dataset.v; S.setDay(k, 'mood', S.day(k).mood === v ? null : v); App.forceRefresh(); },
     pgWater(t) { const k = App.cur.params.k, n = +t.dataset.n, w = S.water(); if (!w) return; const cur = S.habitCount(w, k); const nv = cur === n ? n - 1 : n; w.log = w.log || {}; if (nv <= 0) delete w.log[k]; else w.log[k] = nv; w.updated = Date.now(); U.vibrate(8); S.touch(); App.forceRefresh(); },
     pgExpDel(t) { const k = App.cur.params.k; const a = (S.day(k).expenses || []).slice(); a.splice(+t.dataset.i, 1); S.setDay(k, 'expenses', a); App.forceRefresh(); },
-    pgField: U.debounce(t => S.setDay(App.cur.params.k, t.dataset.f, t.value), 500),
-    pgSched: U.debounce(t => { const k = App.cur.params.k; const s = Object.assign({}, S.day(k).sched || {}); s[t.dataset.h] = t.value; S.setDay(k, 'sched', s); }, 500),
-    pgLearn: U.debounce(t => { const k = App.cur.params.k; const a = (S.day(k).learned || ['', '', '']).slice(); a[+t.dataset.i] = t.value; S.setDay(k, 'learned', a); }, 500)
+    pgField: U.debounce(t => S.setDay(t.dataset.k, t.dataset.f, t.value), 400),
+    pgSched: U.debounce(t => { const k = t.dataset.k; const s = Object.assign({}, S.day(k).sched || {}); s[t.dataset.h] = t.value; S.setDay(k, 'sched', s); }, 500),
+    pgLearn: U.debounce(t => { const k = t.dataset.k; const a = (S.day(k).learned || ['', '', '']).slice(); a[+t.dataset.i] = t.value; S.setDay(k, 'learned', a); }, 500)
   }
 };
