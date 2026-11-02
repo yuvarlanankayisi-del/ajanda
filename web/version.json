@@ -1,7 +1,7 @@
 {
- "version": 19,
+ "version": 20,
  "date": "02.11.2026",
- "notes": "Açılışta kış ya da sonbahar animasyonu (Ayarlar › Görünüm › Açılış animasyonu); plan defterinde uyuyan siyam kedisi",
+ "notes": "Açılış animasyonu artık sırayla: bir açılışta kış, bir sonrakinde sonbahar",
  "files": [
   "css/app.css",
   "img/kedi_body.png",

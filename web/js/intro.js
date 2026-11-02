@@ -1,12 +1,16 @@
 /* Açılış animasyonları: kış (kar birikip ekranı kaplar) ve sonbahar (rüzgârla savrulan yapraklar) */
 'use strict';
 
-const INTROS = { season: 'Mevsime göre', winter: 'Kış · kar', autumn: 'Sonbahar · yapraklar', random: 'Her açılışta rastgele', off: 'Kapalı' };
+const INTROS = { turn: 'Sırayla · bir kış bir sonbahar', season: 'Mevsime göre', winter: 'Kış · kar', autumn: 'Sonbahar · yapraklar', random: 'Her açılışta rastgele', off: 'Kapalı' };
 
 const Intro = {
   pick() {
-    const k = S.set.intro || 'season';
+    const k = S.set.intro || 'turn';
     if (k === 'off') return null;
+    if (k === 'turn') {
+      const nx = S.sync.introLast === 'winter' ? 'autumn' : 'winter';
+      S.sync.introLast = nx; S.saveSync(); return nx;
+    }
     if (k === 'winter' || k === 'autumn') return k;
     if (k === 'random') return Math.random() < 0.5 ? 'winter' : 'autumn';
     const m = new Date().getMonth();

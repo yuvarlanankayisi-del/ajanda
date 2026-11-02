@@ -22,7 +22,7 @@ Screens.settings = {
       <div class="set">${row('pickTheme', 'palette', 'Tema ve renkler', th.name + ' · ' + (th.dark ? 'Koyu' : 'Açık') + (s.accent ? ' · özel renk' : ''), `<span class="row" style="gap:3px">${['bg', 'ac2', 'ac', 'gold'].map(k => `<i style="width:14px;height:14px;border-radius:50%;background:${th.v[k]};border:1px solid var(--line2)"></i>`).join('')}</span>`)}
         ${row('pickBg', 'spark', 'Arka plan animasyonu', BGS[s.bg] || '')}
         ${row('pickHero', 'image', 'Ana sayfa üst görseli', HEROES[s.hero] || '')}
-        ${row('pickIntro', 'spark', 'Açılış animasyonu', INTROS[s.intro || 'season'])}
+        ${row('pickIntro', 'spark', 'Açılış animasyonu', INTROS[s.intro || 'turn'])}
         ${row('pickStart', 'home', 'Açılış ekranı', s.start === 'agenda' ? 'Günlük ajanda' : 'Ana sayfa')}</div>
 
       <div class="lbl">Kategoriler</div>
@@ -108,8 +108,8 @@ Screens.settings = {
       });
     },
     pickIntro() {
-      const rec = App.sheet(`<h3>Açılış animasyonu</h3><p class="mu" style="margin:0;font-size:13px">Kışta kar yağıp ekranı kaplar, sonbaharda yapraklar rüzgârla savrulur. "Mevsime göre" seçilirse aralık–mart arası kış, diğer aylarda sonbahar gösterilir. Animasyon sırasında ekrana dokunursan atlanır.</p>
-        <div class="menu">${Object.entries(INTROS).map(([k, l]) => `<button data-a="inSet" data-k="${k}">${(S.set.intro || 'season') === k ? `<span class="ac">${ic('check', 20, 2.4)}</span>` : ic('spark', 20)}${l}</button>`).join('')}</div>
+      const rec = App.sheet(`<h3>Açılış animasyonu</h3><p class="mu" style="margin:0;font-size:13px">Kışta kar yağıp ekranı kaplar, sonbaharda yapraklar rüzgârla savrulur. "Sırayla" seçiliyse her açılışta biri kış biri sonbahar olur; "Mevsime göre" seçilirse aralık–mart arası kış, diğer aylarda sonbahar gösterilir. Animasyon sırasında ekrana dokunursan atlanır.</p>
+        <div class="menu">${Object.entries(INTROS).map(([k, l]) => `<button data-a="inSet" data-k="${k}">${(S.set.intro || 'turn') === k ? `<span class="ac">${ic('check', 20, 2.4)}</span>` : ic('spark', 20)}${l}</button>`).join('')}</div>
         <div class="row"><button class="btn soft sp" data-a="inPrev" data-k="winter">Kışı izle</button><button class="btn soft sp" data-a="inPrev" data-k="autumn">Sonbaharı izle</button></div>`, {
         acts: {
           inSet: b => { S.set.intro = b.dataset.k; S.set.updated = Date.now(); S.touch(); App.closeSheet(rec); },
