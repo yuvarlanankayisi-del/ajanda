@@ -1,7 +1,7 @@
 {
- "version": 7,
+ "version": 8,
  "date": "02.11.2026",
- "notes": "Ders ve Çalışma bölümü: dersler, konular, ödevler, sınavlar, program, beceriler",
+ "notes": "Aylık puan ve değerlendirme, haftalık/aylık/yıllık istatistikler",
  "files": [
   "css/app.css",
   "img/logo.jpg",
@@ -16,6 +16,7 @@
   "js/misc.js",
   "js/notes.js",
   "js/notify.js",
+  "js/score.js",
   "js/settings.js",
   "js/store.js",
   "js/study.js",

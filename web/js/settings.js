@@ -28,6 +28,9 @@ Screens.settings = {
       <div class="set">${s.categories.map(c => `<button data-a="editCat" data-id="${c.id}"><span class="cdot" style="width:14px;height:14px;background:${c.color}"></span><span class="sp">${U.esc(c.name)}</span><span class="mu">›</span></button>`).join('')}
         <button data-a="newCat">${ic('plus', 20)}<span class="sp">Yeni kategori</span></button></div>
 
+      <div class="lbl">Aylık puan hedefleri</div>
+      <div class="set">${row('setFocusT', 'timer', 'Aylık odak hedefi', (S.set.focusTarget || 600) / 60 + ' saat ders / çalışma')}${row('setPageT', 'book', 'Aylık okuma hedefi', (S.set.pageTarget || 300) + ' sayfa')}</div>
+
       <div class="lbl">Bildirimler</div>
       <div class="set">
         ${N ? row('notifPerm', 'bell', 'Bildirim izni', notifOk ? 'Açık' : 'Kapalı · açmak için dokun', notifOk ? `<span class="ac">${ic('check', 18, 2.4)}</span>` : undefined) : ''}
@@ -91,6 +94,8 @@ Screens.settings = {
       const rec = App.sheet(`<h3>Açılış ekranı</h3><div class="menu"><button data-a="stSet" data-k="home">${ic('home', 20)} Ana sayfa</button><button data-a="stSet" data-k="agenda">${ic('calChk', 20)} Günlük ajanda</button></div>`,
         { acts: { stSet: b => { S.set.start = b.dataset.k; S.set.updated = Date.now(); S.touch(); App.closeSheet(rec); } } });
     },
+    async setFocusT() { const v = await App.prompt('Ayda kaç saat çalışmak istiyorsun?', String((S.set.focusTarget || 600) / 60)); const n = parseFloat(v); if (n > 0) { S.set.focusTarget = Math.round(n * 60); S.set.updated = Date.now(); S.touch(); } },
+    async setPageT() { const v = await App.prompt('Ayda kaç sayfa okumak istiyorsun?', String(S.set.pageTarget || 300)); const n = parseInt(v, 10); if (n > 0) { S.set.pageTarget = n; S.set.updated = Date.now(); S.touch(); } },
     editCat(t) { CatSheet.create(S.set.categories.find(c => c.id === t.dataset.id)); },
     newCat() { CatSheet.create(); },
     async notifPerm() { if (Notify.allowed()) { N.openAppSettings(); return; } await Notify.ask(); App.forceRefresh(); },

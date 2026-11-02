@@ -21,7 +21,8 @@ Screens.books = {
         <div class="bcover" style="${b.cover ? `background-image:url('${S.photoUrl(b.cover)}')` : ''}">${b.cover ? '' : U.esc(b.title.slice(0, 30))}</div>
         <div class="col sp" style="gap:5px;min-width:0"><b class="serif" style="font-size:18px;line-height:1.15">${U.esc(b.title)}</b><span class="mu" style="font-size:12.5px">${U.esc(b.author || '')}</span>
           ${b.pages ? `<div class="bar"><i style="width:${Math.round(100 * (b.page || 0) / b.pages)}%"></i></div><small class="mu" style="font-size:11px">${b.page || 0} / ${b.pages} sayfa · %${Math.round(100 * (b.page || 0) / b.pages)}</small>` : ''}
-          ${b.rating ? `<span style="color:var(--gold);display:flex;gap:2px">${Array.from({ length: b.rating }, () => icf('star', 13)).join('')}</span>` : ''}</div></button>`).join('')
+          ${b.rating ? `<span style="color:var(--gold);display:flex;gap:2px">${Array.from({ length: b.rating }, () => icf('star', 13)).join('')}</span>` : ''}
+          ${b.status === 'reading' ? `<span class="btn soft sm" data-a="bPage" data-id="${b.id}" style="align-self:flex-start;margin-top:2px">Sayfayı güncelle</span>` : ''}</div></button>`).join('')
         : `<div class="col" style="align-items:center;padding:40px 20px;gap:12px;text-align:center"><span class="mu">Bu listede kitap yok.</span><button class="btn soft" data-a="bNew">Kitap ekle</button></div>`}
       <div class="card row dim" style="gap:12px">${ic('film', 22)}<span class="sp" style="font-size:12.5px">Dizi ve film takibi yakında bu bölüme eklenecek.</span></div>
     </div>`;
@@ -29,7 +30,16 @@ Screens.books = {
   acts: {
     bTab(t) { App.cur.entry.params.tab = t.dataset.v; App.forceRefresh(); },
     bNew() { BookSheet.open(null, { status: App.cur.params.tab || 'reading' }); },
-    bOpen(t) { BookSheet.open(S.db.books.find(b => b.id === t.dataset.id)); }
+    bOpen(t) { BookSheet.open(S.db.books.find(b => b.id === t.dataset.id)); },
+    async bPage(t) {
+      const b = S.db.books.find(x => x.id === t.dataset.id); if (!b) return;
+      const v = await App.prompt('Kaçıncı sayfadasın?', String(b.page || 0)); if (v == null || v === '') return;
+      const n = Math.max(0, parseInt(v, 10) || 0);
+      if (n > (b.page || 0)) { b.log = b.log || {}; const k = U.today(); b.log[k] = (b.log[k] || 0) + (n - (b.page || 0)); }
+      b.page = b.pages ? Math.min(n, b.pages) : n; b.updated = Date.now();
+      if (b.pages && b.page >= b.pages && b.status !== 'done') { b.status = 'done'; b.finished = Date.now(); U.toast('Tebrikler, kitabı bitirdin!'); }
+      S.touch();
+    }
   }
 };
 
@@ -58,6 +68,7 @@ const BookSheet = {
           grab(); if (!f.title.trim()) return U.toast('Kitap adını yaz');
           const data = { title: f.title.trim(), author: f.author.trim(), status: f.status, page: f.page, pages: f.pages, cover: f.cover, rating: f.rating, comment: f.comment, updated: Date.now() };
           if (f.status === 'done' && !(b && b.finished)) data.finished = Date.now();
+          if (b && f.page > (b.page || 0)) { b.log = b.log || {}; const k = U.today(); b.log[k] = (b.log[k] || 0) + (f.page - (b.page || 0)); }
           if (isNew) S.newBook(data); else { Object.assign(b, data); S.touch(); }
           App.closeSheet(rec);
         }

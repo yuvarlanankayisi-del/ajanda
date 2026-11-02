@@ -39,7 +39,8 @@ const SECTIONS = [
   { k: 'study', n: 'Ders ve Çalışma', i: 'cap', to: 'study', g: 2, d: 'Dersler, sınavlar, ödevler' },
   { k: 'cycle', n: 'Döngüm', i: 'drop', g: 2, d: 'Takvimden ayrı takip' },
   { k: 'special', n: 'Özel Günler', i: 'gift', g: 2, d: 'Doğum günleri, geri sayım' },
-  { k: 'score', n: 'Aylık Değerlendirme', i: 'chart', g: 2, d: 'Puanlar ve grafikler' },
+  { k: 'score', n: 'Aylık Değerlendirme', i: 'chart', to: 'score', g: 2, d: 'Puanlar ve grafikler' },
+  { k: 'stats', n: 'İstatistikler', i: 'bars', to: 'stats', g: 2, d: 'Haftalık, aylık, yıllık' },
   { k: 'wish', n: 'İstek Listesi', i: 'star', g: 3 },
   { k: 'travel', n: 'Gezi Günlüğü', i: 'pin', g: 3 },
   { k: 'quotes', n: 'Alıntılar', i: 'quote', g: 3 },
@@ -175,7 +176,7 @@ Screens.home = {
           <div class="tl">${plan}</div>
           <button class="pill" data-a="go" data-to="agenda">Tümünü Gör <span>›</span></button>
         </section>
-        <section class="card col" style="gap:5px;align-items:center" aria-label="Hızlı bakış">
+        <section class="card col" data-a="go" data-to="stats" style="gap:5px;align-items:center" aria-label="Hızlı bakış">
           <div class="ct" style="align-self:stretch">${ic('chart', 13, 2)}<h2 style="font-size:14px">Hızlı Bakış</h2></div>
           ${U.ring(60, 5, ws.pct, 'var(--ac)', '%' + Math.round(ws.pct * 100), 18)}
           <b style="font-size:10.5px">Bu hafta</b>
@@ -273,12 +274,14 @@ const NotifCenter = {
       ${hasUpd ? `<button class="card row" data-a="ncUpd" style="color:inherit;text-align:left">${ic('update', 20)}<span style="flex:1"><b>Yeni güncelleme hazır</b><br><small class="mu">${U.esc(Upd.remote.notes || 'Yenilikleri yüklemek için dokun')}</small></span></button>` : ''}
       ${od.length ? `<button class="card row" data-a="ncCarry" style="color:inherit;text-align:left">${ic('clock', 20)}<span style="flex:1"><b>${od.length} ertelenmiş / kalmış görev</b><br><small class="mu">Bugüne taşımak için dokun</small></span></button>` : ''}
       ${(() => { const gs = (S.db.goals || []).filter(g => !g.done && !g.archived && S.goalEnd(g) && U.diffDays(tk, S.goalEnd(g)) <= 7 && U.diffDays(tk, S.goalEnd(g)) >= 0 && S.goalPct(g) < 1); return gs.length ? `<div class="lbl">Süresi yaklaşan hedefler</div><div class="col">${gs.map(g => `<button class="card row" data-a="ncGoal" data-id="${g.id}" style="color:inherit;text-align:left"><span class="cdot" style="background:${g.color}"></span><span class="sp">${U.esc(g.title)}<br><small class="mu">%${Math.round(S.goalPct(g) * 100)} · ${U.diffDays(tk, S.goalEnd(g))} gün kaldı</small></span></button>`).join('')}</div>` : ''; })()}
+      ${(() => { const pm = Score.ymShift(Score.ym(), -1); return new Date().getDate() <= 10 && !(S.db.months[pm] && S.db.months[pm].self) ? `<button class="card row" data-a="ncScore" data-ym="${pm}" style="color:inherit;text-align:left">${ic('chart', 20)}<span style="flex:1"><b>${Score.ymLabel(pm)} değerlendirmesi</b><br><small class="mu">Geçen ayın puanı ${Score.final(pm).total ?? '—'} · kendi puanını vermek için dokun</small></span></button>` : ''; })()}
       <div class="lbl">Yaklaşan saatli işler</div>
       <div class="col">${soon.length ? soon.map(x => `<div class="row"><span class="cdot" style="background:${S.cat(x.t.cat).color}"></span><span style="flex:1">${U.esc(x.t.title)}</span><small class="mu">${U.rel(x.k)} ${x.t.time}</small></div>`).join('') : '<span class="mu">Yakında saatli bir iş yok.</span>'}</div>
       ${N && !Notify.allowed() ? `<button class="btn soft wide" data-a="ncPerm">Bildirim izni ver</button>` : ''}`, {
       acts: {
         ncUpd: () => { App.closeSheet(rec); App.go('settings', { open: 'update' }); },
         ncCarry: () => { App.closeSheet(rec); CarrySheet.open(); },
+        ncScore: b => { App.closeSheet(rec); App.go('score', { ym: b.dataset.ym }); },
         ncGoal: b => { App.closeSheet(rec); App.go('goal', { id: b.dataset.id }); },
         ncPerm: async () => { await Notify.ask(); App.closeSheet(rec); }
       }
