@@ -42,6 +42,7 @@ const Notify = {
         items.push({ id: hashId(h.id + k), at: base.getTime(), title: h.name, body: 'Alışkanlık zamanı · seri ' + S.habitStreak(h) + ' gün' });
       }
     }
+    try { for (const r of Cyc.reminders()) items.push(r); } catch (e) { }
     if (S.sync.pomoEnd && S.sync.pomoEnd > now) items.push({ id: 599999, at: S.sync.pomoEnd, title: 'Süre doldu', body: S.sync.pomoMsg || 'Çalışma oturumu bitti, kısa bir mola ver.' });
     items.sort((a, b) => a.at - b.at);
 

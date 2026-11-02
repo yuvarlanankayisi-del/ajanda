@@ -1,7 +1,7 @@
 {
- "version": 10,
+ "version": 11,
  "date": "02.11.2026",
- "notes": "Her temada açık/koyu mod ve kendi vurgu rengini seçme",
+ "notes": "Döngüm ve Özel Günler bölümleri",
  "files": [
   "css/app.css",
   "img/logo.jpg",
@@ -9,6 +9,7 @@
   "js/agenda.js",
   "js/app.js",
   "js/books.js",
+  "js/cycle.js",
   "js/goals.js",
   "js/habits.js",
   "js/home.js",

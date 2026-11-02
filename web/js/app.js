@@ -265,7 +265,8 @@ const Acts = {
     const n = S.newNote({ folder: t && t.dataset.folder || null });
     App.go('note', { id: n.id, fresh: 1 });
   },
-  soon(t) { App.go('soon', { name: t.dataset.name, icon: t.dataset.icon }); }
+  soon(t) { App.go('soon', { name: t.dataset.name, icon: t.dataset.icon }); },
+  async openCycle() { if (Cyc.get().lock && !(await PinCheck.ask('Döngüm'))) return; App.go('cycle'); }
 };
 
 /* ---------- kilit ---------- */

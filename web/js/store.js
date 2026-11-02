@@ -343,6 +343,7 @@ const S = {
       if (!r || (v.updated || 0) >= (r.updated || 0)) out.days[k] = v;
     }
     out.photos = Object.assign({}, remote.photos || {}, local.photos || {});
+    if (remote.cycle && (!local.cycle || (remote.cycle.updated || 0) > (local.cycle.updated || 0))) out.cycle = remote.cycle;
     out.months = Object.assign({}, remote.months || {});
     for (const [k, v] of Object.entries(local.months || {})) { const r = out.months[k]; if (!r || (v.updated || 0) >= (r.updated || 0)) out.months[k] = v; }
     if ((remote.settings && remote.settings.updated || 0) > (local.settings.updated || 0)) {

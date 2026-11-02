@@ -37,8 +37,8 @@ const SECTIONS = [
   { k: 'focus', n: 'Odak Sayacı', i: 'timer', to: 'pomodoro', g: 2, d: 'Pomodoro ile çalışma' },
   { k: 'goals', n: 'Hedefler', i: 'flag', to: 'goals', g: 2, d: 'Yıllık, aylık hedefler, hayal panosu' },
   { k: 'study', n: 'Ders ve Çalışma', i: 'cap', to: 'study', g: 2, d: 'Dersler, sınavlar, ödevler' },
-  { k: 'cycle', n: 'Döngüm', i: 'drop', g: 2, d: 'Takvimden ayrı takip' },
-  { k: 'special', n: 'Özel Günler', i: 'gift', g: 2, d: 'Doğum günleri, geri sayım' },
+  { k: 'cycle', n: 'Döngüm', i: 'drop', to: 'cycle', act: 'openCycle', g: 2, d: 'Takvimden ayrı takip' },
+  { k: 'special', n: 'Özel Günler', i: 'gift', to: 'special', g: 2, d: 'Doğum günleri, geri sayım' },
   { k: 'score', n: 'Aylık Değerlendirme', i: 'chart', to: 'score', g: 2, d: 'Puanlar ve grafikler' },
   { k: 'stats', n: 'İstatistikler', i: 'bars', to: 'stats', g: 2, d: 'Haftalık, aylık, yıllık' },
   { k: 'wish', n: 'İstek Listesi', i: 'star', g: 3 },
@@ -52,6 +52,7 @@ const SECTIONS = [
 ];
 const secOf = k => SECTIONS.find(s => s.k === k);
 function secAttrs(s) {
+  if (s.act) return `data-a="${s.act}"`;
   return s.to ? `data-a="go" data-to="${s.to}"` : `data-a="soon" data-name="${U.esc(s.n)}" data-icon="${s.i}"`;
 }
 
