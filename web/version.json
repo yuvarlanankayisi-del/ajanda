@@ -1,7 +1,7 @@
 {
- "version": 9,
+ "version": 10,
  "date": "02.11.2026",
- "notes": "Dizi ve film takibi",
+ "notes": "Her temada açık/koyu mod ve kendi vurgu rengini seçme",
  "files": [
   "css/app.css",
   "img/logo.jpg",

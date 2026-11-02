@@ -15,10 +15,48 @@ const THEMES = {
 const BGS = { isiklar: 'Süzülen ışıklar', yildiz: 'Yıldızlar', toz: 'Uçuşan toz', dalga: 'Yavaş dalga', kapali: 'Kapalı' };
 const HEROES = { oda: 'Gece odası', pencere: 'Yıldızlı pencere', cicek: 'Çiçekler', yok: 'Görselsiz', foto: 'Kendi fotoğrafım' };
 
+/* renk yardımcıları */
+const Col = {
+  rgb(h) { h = h.replace('#', ''); if (h.length === 3) h = h.split('').map(c => c + c).join(''); return [0, 2, 4].map(i => parseInt(h.substr(i, 2), 16)); },
+  hex(a) { return '#' + a.map(x => Math.max(0, Math.min(255, Math.round(x))).toString(16).padStart(2, '0')).join(''); },
+  mix(a, b, t) { const x = Col.rgb(a), y = Col.rgb(b); return Col.hex(x.map((v, i) => v + (y[i] - v) * t)); },
+  rgba(h, a) { const x = Col.rgb(h); return `rgba(${x[0]},${x[1]},${x[2]},${a})`; }
+};
+
+const ACCENTS = ['#C4566F', '#8E2E48', '#B8324C', '#C9A35C', '#5878B8', '#5E9A71', '#8C6CC4', '#D0708A', '#3E8A8A', '#C77B4A', '#7A7A8C', '#A8405A'];
+
 const Theme = {
-  apply() {
+  /* seçili tema + mod + özel renk -> son palet */
+  cur(themeKey, modeOverride) {
     const s = S.set;
-    const th = THEMES[s.theme] || THEMES.bordo;
+    const th = THEMES[themeKey || s.theme] || THEMES.bordo;
+    const mode = modeOverride || s.mode || 'theme';
+    let dark = mode === 'theme' ? th.dark : mode === 'dark';
+    let v = Object.assign({}, th.v);
+    if (dark && !th.dark) {
+      const base = v.ac2;
+      v = Object.assign(v, {
+        bg: Col.mix(base, '#000000', .86), bg2: Col.mix(base, '#000000', .79), tx: Col.mix(base, '#ffffff', .9), tx2: Col.mix(base, '#ffffff', .95),
+        mu: Col.mix(base, '#ffffff', .66), mu2: Col.mix(base, '#ffffff', .42), ac: Col.mix(base, '#ffffff', .48), acTx: '#ffffff',
+        line: Col.rgba(Col.mix(base, '#ffffff', .48), .17), blob1: Col.mix(base, '#000000', .55), blob2: Col.mix(base, '#000000', .62), gold: Col.mix(v.gold, '#ffffff', .3)
+      });
+    } else if (!dark && th.dark) {
+      const base = v.ac2;
+      v = Object.assign(v, {
+        bg: Col.mix(v.ac, '#ffffff', .88), bg2: Col.mix(v.ac, '#ffffff', .94), tx: Col.mix(base, '#000000', .55), tx2: Col.mix(base, '#000000', .65),
+        mu: Col.mix(base, '#000000', .25), mu2: Col.mix(base, '#ffffff', .45), ac: base, acTx: '#ffffff',
+        line: Col.rgba(base, .15), blob1: Col.mix(v.ac, '#ffffff', .62), blob2: Col.mix(v.gold, '#ffffff', .7), gold: Col.mix(v.gold, '#000000', .3)
+      });
+    }
+    if (s.accent && !themeKey) {
+      const c = s.accent;
+      if (dark) Object.assign(v, { ac: Col.mix(c, '#ffffff', .4), ac2: Col.mix(c, '#000000', .3), grad1: c, grad2: Col.mix(c, '#000000', .35), line: Col.rgba(Col.mix(c, '#ffffff', .4), .17) });
+      else Object.assign(v, { ac: Col.mix(c, '#000000', .2), ac2: Col.mix(c, '#000000', .2), grad1: c, grad2: Col.mix(c, '#000000', .3), line: Col.rgba(c, .16) });
+    }
+    return { name: th.name, dark, v };
+  },
+  apply() {
+    const th = Theme.cur();
     const r = document.documentElement.style;
     const v = th.v;
     r.setProperty('--bg', v.bg); r.setProperty('--bg2', v.bg2); r.setProperty('--ac', v.ac); r.setProperty('--ac2', v.ac2);
@@ -60,7 +98,7 @@ const Theme = {
     const s = S.set;
     if (s.hero === 'foto' && s.heroPhoto) return `<img class="scene" src="${S.photoUrl(s.heroPhoto)}" alt="">`;
     if (s.hero === 'yok') return '';
-    const dark = (THEMES[s.theme] || THEMES.bordo).dark;
+    const dark = Theme.cur().dark;
     const room = dark ? 'var(--bg2)' : 'var(--blob2)';
     const wall = dark ? '#2C131C' : 'var(--blob1)';
     const sky1 = s.theme === 'gece' ? '#141C35' : '#2A1430', sky2 = s.theme === 'gece' ? '#2B3A62' : '#5A2638';

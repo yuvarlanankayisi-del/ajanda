@@ -4,7 +4,7 @@
 Screens.settings = {
   render(p) {
     const s = S.set, sy = S.sync;
-    const th = THEMES[s.theme] || THEMES.bordo;
+    const th = Theme.cur();
     const hasUpd = Upd.remote && Upd.local && Upd.remote.version > Upd.local.version;
     const info = (() => { try { return N ? JSON.parse(N.appInfo()) : {}; } catch (e) { return {}; } })();
     const notifOk = Notify.allowed();
@@ -19,7 +19,7 @@ Screens.settings = {
       <div class="set">${row('setName', 'user', 'Adın', U.esc(s.name || '—'))}${row('setSub', 'edit', 'Selamın altındaki yazı', s.sub ? U.esc(s.sub) : 'Otomatik (günün durumuna göre)')}</div>
 
       <div class="lbl">Görünüm</div>
-      <div class="set">${row('pickTheme', 'palette', 'Tema', th.name, `<span class="row" style="gap:3px">${['bg', 'ac2', 'ac', 'gold'].map(k => `<i style="width:14px;height:14px;border-radius:50%;background:${th.v[k]};border:1px solid var(--line2)"></i>`).join('')}</span>`)}
+      <div class="set">${row('pickTheme', 'palette', 'Tema ve renkler', th.name + ' · ' + (th.dark ? 'Koyu' : 'Açık') + (s.accent ? ' · özel renk' : ''), `<span class="row" style="gap:3px">${['bg', 'ac2', 'ac', 'gold'].map(k => `<i style="width:14px;height:14px;border-radius:50%;background:${th.v[k]};border:1px solid var(--line2)"></i>`).join('')}</span>`)}
         ${row('pickBg', 'spark', 'Arka plan animasyonu', BGS[s.bg] || '')}
         ${row('pickHero', 'image', 'Ana sayfa üst görseli', HEROES[s.hero] || '')}
         ${row('pickStart', 'home', 'Açılış ekranı', s.start === 'agenda' ? 'Günlük ajanda' : 'Ana sayfa')}</div>
@@ -71,9 +71,25 @@ Screens.settings = {
     async setName() { const v = await App.prompt('Adın', S.set.name); if (v != null && v) { S.set.name = v; S.set.updated = Date.now(); S.touch(); } },
     async setSub() { const v = await App.prompt('Selamın altındaki yazı (boş bırakırsan otomatik)', S.set.sub, 'ör. Bugün her şey yolunda.'); if (v != null) { S.set.sub = v; S.set.updated = Date.now(); S.touch(); } },
     pickTheme() {
-      const draw = () => `<h3>Tema</h3><div class="themes">${Object.entries(THEMES).map(([k, t]) => `<button class="${S.set.theme === k ? 'on' : ''}" data-a="thSet" data-k="${k}" style="background:${t.v.bg};color:${t.v.tx};border-color:${S.set.theme === k ? t.v.ac : t.v.line}">
-        <span class="sw4">${['ac2', 'ac', 'gold', 'mu'].map(c => `<i style="background:${t.v[c]}"></i>`).join('')}</span>${t.name}<small style="opacity:.7;font-weight:500">${t.dark ? 'Koyu' : 'Açık'}</small></button>`).join('')}</div>`;
-      const rec = App.sheet(draw(), { acts: { thSet: b => { S.set.theme = b.dataset.k; S.set.updated = Date.now(); Theme.apply(); S.touch(); App.setSheet(rec, draw()); } }, live: true });
+      const draw = () => {
+        const mode = S.set.mode || 'theme';
+        return `<h3>Tema ve renkler</h3>
+        <div class="seg" style="align-self:center"><button class="${mode === 'theme' ? 'on' : ''}" data-a="thMode" data-v="theme">Temanın kendisi</button><button class="${mode === 'dark' ? 'on' : ''}" data-a="thMode" data-v="dark">Koyu</button><button class="${mode === 'light' ? 'on' : ''}" data-a="thMode" data-v="light">Açık</button></div>
+        <div class="themes">${Object.keys(THEMES).map(k => { const t = Theme.cur(k, mode); return `<button class="${S.set.theme === k ? 'on' : ''}" data-a="thSet" data-k="${k}" style="background:${t.v.bg};color:${t.v.tx};border-color:${S.set.theme === k ? t.v.ac : t.v.line}">
+          <span class="sw4">${['ac2', 'ac', 'gold', 'mu'].map(c => `<i style="background:${t.v[c]}"></i>`).join('')}</span>${t.name}<small style="opacity:.7;font-weight:500">${t.dark ? 'Koyu' : 'Açık'}</small></button>`; }).join('')}</div>
+        <div class="field"><label>Kendi vurgu rengin</label><div class="swatches">${ACCENTS.map(c => `<button class="${S.set.accent === c ? 'on' : ''}" data-a="thAc" data-v="${c}" style="background:${c}"></button>`).join('')}</div>
+          <div class="row" style="gap:8px;margin-top:6px"><label class="btn ghost sm sp" style="position:relative;overflow:hidden">${ic('palette', 16)} Renk seç<input type="color" data-ch="thPick" value="${S.set.accent || '#C4566F'}" style="position:absolute;inset:0;opacity:0"></label>${S.set.accent ? `<button class="btn ghost sm sp" data-a="thAc" data-v="">Temanın rengine dön</button>` : ''}</div></div>`;
+      };
+      const set = fn => { fn(); S.set.updated = Date.now(); Theme.apply(); S.touch(); App.setSheet(rec, draw()); };
+      const rec = App.sheet(draw(), {
+        live: true,
+        acts: {
+          thSet: b => set(() => { S.set.theme = b.dataset.k; }),
+          thMode: b => set(() => { S.set.mode = b.dataset.v; }),
+          thAc: b => set(() => { S.set.accent = b.dataset.v || null; }),
+          thPick: i => set(() => { S.set.accent = i.value; })
+        }
+      });
     },
     pickBg() {
       const rec = App.sheet(`<h3>Arka plan animasyonu</h3><p class="mu" style="margin:0;font-size:13px">Arkada çok yavaş hareket eden, göze batmayan bir katman.</p><div class="menu">${Object.entries(BGS).map(([k, l]) => `<button data-a="bgSet" data-k="${k}">${S.set.bg === k ? `<span class="ac">${ic('check', 20, 2.4)}</span>` : ic('spark', 20)}${l}</button>`).join('')}</div>`,
