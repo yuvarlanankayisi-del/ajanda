@@ -52,12 +52,20 @@ const Intro = {
     const T_FILL = 3400, T_HOLD = 4000, T_END = 4800;
     const ease = x => x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x);
     const lump = Array.from({ length: 6 }, () => ({ f: 0.006 + Math.random() * 0.02, p: Math.random() * 6.28, a: 4 + Math.random() * 10 }));
+    /* altı kollu kar tanesi çizimi (bir kez çizilir, sonra kopyalanır) */
+    const SP = 64, sprite = document.createElement('canvas'); sprite.width = sprite.height = SP;
+    { const c = sprite.getContext('2d'); c.translate(SP / 2, SP / 2); c.strokeStyle = '#fff'; c.lineCap = 'round'; c.shadowColor = 'rgba(255,255,255,.8)'; c.shadowBlur = 3;
+      for (let k = 0; k < 6; k++) { c.save(); c.rotate(k * Math.PI / 3);
+        c.lineWidth = 3.4; c.beginPath(); c.moveTo(0, 0); c.lineTo(0, -26); c.stroke();
+        c.lineWidth = 2.6; c.beginPath(); c.moveTo(0, -11); c.lineTo(-7, -18); c.moveTo(0, -11); c.lineTo(7, -18); c.moveTo(0, -18); c.lineTo(-5, -23); c.moveTo(0, -18); c.lineTo(5, -23); c.stroke();
+        c.restore(); }
+      c.fillStyle = '#fff'; c.beginPath(); c.arc(0, 0, 3.2, 0, 6.283); c.fill(); }
     const t0 = performance.now();
     let last = t0;
     const spawn = (n, t) => {
       for (let i = 0; i < n; i++) {
-        const big = Math.random() < 0.2 + t / 12000;
-        flakes.push({ x: Math.random() * (W + 120) - 80, y: -10 - Math.random() * 40, r: big ? 2.2 + Math.random() * 2.4 : 0.8 + Math.random() * 1.6, vy: (big ? 150 : 110) + Math.random() * 110, sw: Math.random() * 6.28, sp: 1 + Math.random() * 2, a: 0.6 + Math.random() * 0.35 });
+        const big = Math.random() < 0.2 + t / 12000, drift = Math.random() < 0.45;
+        flakes.push({ x: Math.random() * (W + 120) - 80, y: -10 - Math.random() * 40, r: big ? 2.2 + Math.random() * 2.4 : 0.8 + Math.random() * 1.6, vy: (big ? 150 : 110) + Math.random() * 110, sw: Math.random() * 6.28, sp: drift ? 1.6 + Math.random() * 1.4 : 1 + Math.random() * 2, amp: drift ? 45 + Math.random() * 45 : 14 + Math.random() * 12, rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 3, a: 0.65 + Math.random() * 0.35 });
       }
     };
     const frame = now => {
@@ -74,7 +82,7 @@ const Intro = {
       for (let i = flakes.length - 1; i >= 0; i--) {
         const f = flakes[i];
         f.sw += f.sp * dt;
-        f.y += f.vy * dt; f.x += (wind + Math.sin(f.sw) * 22) * dt;
+        f.y += f.vy * dt; f.x += (wind + Math.sin(f.sw) * f.amp) * dt; f.rot += f.vr * dt;
         const c = Math.max(0, Math.min(cols - 1, Math.floor(f.x / COL)));
         if (f.y >= H - pile[c] + 2) {
           /* düşen tane yüzeyde küçük bir tümsek bırakır */
@@ -82,7 +90,8 @@ const Intro = {
           for (let k = -2; k <= 2; k++) { const j = c + k; if (j >= 0 && j < cols) pile[j] += add * (1 - Math.abs(k) / 3); }
           flakes.splice(i, 1); continue;
         }
-        ctx.globalAlpha = f.a; ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 6.283); ctx.fill();
+        ctx.globalAlpha = f.a;
+        { const d = f.r * 2.6; ctx.save(); ctx.translate(f.x, f.y); ctx.rotate(f.rot); ctx.drawImage(sprite, -d, -d, d * 2, d * 2); ctx.restore(); }
       }
       ctx.globalAlpha = 1;
       /* biriken kar: yavaşça, dalgalı bir yüzeyle yükselir */
