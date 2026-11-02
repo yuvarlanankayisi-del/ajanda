@@ -279,6 +279,9 @@ const TaskSheet = {
           grab();
           if (!f.title.trim()) { U.toast('Bir başlık yaz'); return; }
           const data = { title: f.title.trim(), kind: f.kind, date: f.date, time: f.time, remind: f.remind, repeat: f.repeat, cat: f.cat, note: f.note.trim(), updated: Date.now() };
+          if (f.goal) data.goal = f.goal;
+          if (f.course) data.course = f.course;
+          if (f.exam) data.exam = true;
           if (isNew) S.newTask(data); else { Object.assign(task, data); S.touch(); }
           App.closeSheet(rec);
           if (f.remind != null && N && !Notify.allowed()) { if (await App.confirm('Hatırlatma için bildirim izni gerekiyor. İzin verelim mi?', 'İzin ver')) Notify.ask(); }

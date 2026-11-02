@@ -19,7 +19,8 @@ function freshDb() {
       lock: { on: false, pin: null, bio: false }, onboarded: false, categories: DEFAULT_CATS.slice(),
       quoteIdx: 0, updated: Date.now()
     },
-    tasks: [], notes: [], folders: [], days: {}, habits: [], books: [], photos: {}, deleted: {}
+    tasks: [], notes: [], folders: [], days: {}, habits: [], books: [], photos: {}, deleted: {},
+    goals: [], vision: [], courses: [], skills: [], shows: [], months: {}
   };
 }
 
@@ -296,11 +297,38 @@ const S = {
     S.db.books.unshift(b); S.touch(); return b;
   },
 
+  /* ===== hedefler ===== */
+  newGoal(p) {
+    const g = Object.assign({ id: 'g' + U.id(), title: '', period: 'month', start: U.today(), due: null, color: '#E89AAD', cover: null, why: '', steps: [], progress: 0, done: false, fav: false, archived: false, created: Date.now(), updated: Date.now() }, p || {});
+    S.db.goals.unshift(g); S.touch(); return g;
+  },
+  goalPct(g) {
+    if (g.done) return 1;
+    if (g.steps && g.steps.length) return g.steps.filter(x => x.done).length / g.steps.length;
+    return (g.progress || 0) / 100;
+  },
+  /* hedefin dönemi şu an mı? */
+  goalActive(g, k) {
+    k = k || U.today();
+    if (g.done || g.archived) return false;
+    if (g.due) return k <= g.due;
+    const end = S.goalEnd(g);
+    return !end || k <= end;
+  },
+  goalEnd(g) {
+    if (g.due) return g.due;
+    const d = U.parse(g.start || U.today());
+    if (g.period === 'week') return U.addDays(U.weekStart(g.start), 6);
+    if (g.period === 'month') return U.key(new Date(d.getFullYear(), d.getMonth() + 1, 0));
+    if (g.period === 'year') return d.getFullYear() + '-12-31';
+    return null;
+  },
+
   /* ===== senkron birleştirme ===== */
   merge(local, remote) {
     const out = JSON.parse(JSON.stringify(local));
     out.deleted = Object.assign({}, remote.deleted || {}, local.deleted || {});
-    for (const coll of ['tasks', 'notes', 'folders', 'habits', 'books']) {
+    for (const coll of ['tasks', 'notes', 'folders', 'habits', 'books', 'goals', 'vision', 'courses', 'skills', 'shows']) {
       const map = new Map();
       for (const x of (remote[coll] || [])) map.set(x.id, x);
       for (const x of (local[coll] || [])) {
@@ -315,6 +343,8 @@ const S = {
       if (!r || (v.updated || 0) >= (r.updated || 0)) out.days[k] = v;
     }
     out.photos = Object.assign({}, remote.photos || {}, local.photos || {});
+    out.months = Object.assign({}, remote.months || {});
+    for (const [k, v] of Object.entries(local.months || {})) { const r = out.months[k]; if (!r || (v.updated || 0) >= (r.updated || 0)) out.months[k] = v; }
     if ((remote.settings && remote.settings.updated || 0) > (local.settings.updated || 0)) {
       const keepLock = local.settings.lock;
       out.settings = Object.assign({}, remote.settings, { lock: keepLock });

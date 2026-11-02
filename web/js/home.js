@@ -35,7 +35,7 @@ const SECTIONS = [
   { k: 'habits', n: 'Alışkanlıklar', i: 'target', to: 'habits', g: 1, d: 'Seri ve başarı takibi' },
   { k: 'books', n: 'Kitap · Dizi · Film', i: 'film', to: 'books', g: 2, d: 'Okuma listesi, ilerleme' },
   { k: 'focus', n: 'Odak Sayacı', i: 'timer', to: 'pomodoro', g: 2, d: 'Pomodoro ile çalışma' },
-  { k: 'goals', n: 'Hedefler', i: 'flag', g: 2, d: 'Yıllık, aylık hedefler' },
+  { k: 'goals', n: 'Hedefler', i: 'flag', to: 'goals', g: 2, d: 'Yıllık, aylık hedefler, hayal panosu' },
   { k: 'study', n: 'Ders ve Çalışma', i: 'cap', g: 2, d: 'Dersler, sınavlar, ödevler' },
   { k: 'cycle', n: 'Döngüm', i: 'drop', g: 2, d: 'Takvimden ayrı takip' },
   { k: 'special', n: 'Özel Günler', i: 'gift', g: 2, d: 'Doğum günleri, geri sayım' },
@@ -109,8 +109,10 @@ Screens.home = {
 
     /* yaklaşanlar */
     const seen = new Set();
-    const up = S.upcoming(45).filter(x => { if (seen.has(x.t.id)) return false; seen.add(x.t.id); return true; }).slice(0, 3);
-    const upHtml = up.length ? up.map(x => `<button class="ev" data-a="openDay" data-k="${x.k}"><div class="dd"><small>${U.daysS[U.dow(x.k)]}</small><b>${U.parse(x.k).getDate()}</b></div><i class="dt" style="background:${S.cat(x.t.cat).color}"></i><span>${U.esc(x.t.title)}</span></button>`).join('')
+    const upT = S.upcoming(45).filter(x => { if (seen.has(x.t.id)) return false; seen.add(x.t.id); return true; }).map(x => ({ k: x.k, title: x.t.title, color: S.cat(x.t.cat).color, a: `data-a="openDay" data-k="${x.k}"` }));
+    const upG = (S.db.goals || []).filter(g => !g.done && !g.archived && g.due && g.due > tk && g.due <= U.addDays(tk, 45)).map(g => ({ k: g.due, title: g.title, color: g.color, a: `data-a="go" data-to="goal" data-p='{"id":"${g.id}"}'`, goal: 1 }));
+    const up = upT.concat(upG).sort((a, b) => a.k < b.k ? -1 : 1).slice(0, 3);
+    const upHtml = up.length ? up.map(x => `<button class="ev" ${x.a}><div class="dd"><small>${U.daysS[U.dow(x.k)]}</small><b>${U.parse(x.k).getDate()}</b></div><i class="dt" style="background:${x.color}"></i><span>${x.goal ? '<span style="color:var(--gold)">Hedef · </span>' : ''}${U.esc(x.title)}</span></button>`).join('')
       : '<div class="empty">Yaklaşan bir şey yok</div>';
 
     /* kısayollar */
@@ -270,12 +272,14 @@ const NotifCenter = {
     const rec = App.sheet(`<h3>Bildirimler</h3>
       ${hasUpd ? `<button class="card row" data-a="ncUpd" style="color:inherit;text-align:left">${ic('update', 20)}<span style="flex:1"><b>Yeni güncelleme hazır</b><br><small class="mu">${U.esc(Upd.remote.notes || 'Yenilikleri yüklemek için dokun')}</small></span></button>` : ''}
       ${od.length ? `<button class="card row" data-a="ncCarry" style="color:inherit;text-align:left">${ic('clock', 20)}<span style="flex:1"><b>${od.length} ertelenmiş / kalmış görev</b><br><small class="mu">Bugüne taşımak için dokun</small></span></button>` : ''}
+      ${(() => { const gs = (S.db.goals || []).filter(g => !g.done && !g.archived && S.goalEnd(g) && U.diffDays(tk, S.goalEnd(g)) <= 7 && U.diffDays(tk, S.goalEnd(g)) >= 0 && S.goalPct(g) < 1); return gs.length ? `<div class="lbl">Süresi yaklaşan hedefler</div><div class="col">${gs.map(g => `<button class="card row" data-a="ncGoal" data-id="${g.id}" style="color:inherit;text-align:left"><span class="cdot" style="background:${g.color}"></span><span class="sp">${U.esc(g.title)}<br><small class="mu">%${Math.round(S.goalPct(g) * 100)} · ${U.diffDays(tk, S.goalEnd(g))} gün kaldı</small></span></button>`).join('')}</div>` : ''; })()}
       <div class="lbl">Yaklaşan saatli işler</div>
       <div class="col">${soon.length ? soon.map(x => `<div class="row"><span class="cdot" style="background:${S.cat(x.t.cat).color}"></span><span style="flex:1">${U.esc(x.t.title)}</span><small class="mu">${U.rel(x.k)} ${x.t.time}</small></div>`).join('') : '<span class="mu">Yakında saatli bir iş yok.</span>'}</div>
       ${N && !Notify.allowed() ? `<button class="btn soft wide" data-a="ncPerm">Bildirim izni ver</button>` : ''}`, {
       acts: {
         ncUpd: () => { App.closeSheet(rec); App.go('settings', { open: 'update' }); },
         ncCarry: () => { App.closeSheet(rec); CarrySheet.open(); },
+        ncGoal: b => { App.closeSheet(rec); App.go('goal', { id: b.dataset.id }); },
         ncPerm: async () => { await Notify.ask(); App.closeSheet(rec); }
       }
     });

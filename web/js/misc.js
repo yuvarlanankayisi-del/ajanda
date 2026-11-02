@@ -42,15 +42,17 @@ Screens.search = {
       const days = Object.entries(S.db.days).filter(([k, d]) => has(d.journal) || has(d.best) || has(d.note) || (d.gratitude || []).some(has) || (d.learned || []).some(has)).sort((a, b) => a[0] < b[0] ? 1 : -1).slice(0, 30);
       const habits = S.db.habits.filter(h => has(h.name));
       const books = S.db.books.filter(b => has(b.title) || has(b.author) || has(b.comment));
+      const goals = (S.db.goals || []).filter(g => has(g.title) || has(g.why) || (g.steps || []).some(x => has(x.v)));
       const snip = s => { s = s || ''; const i = s.toLocaleLowerCase('tr-TR').indexOf(q); if (i < 0) return U.esc(s.slice(0, 80)); const a = Math.max(0, i - 30); return (a ? '…' : '') + U.esc(s.slice(a, i)) + '<b style="color:var(--ac)">' + U.esc(s.slice(i, i + q.length)) + '</b>' + U.esc(s.slice(i + q.length, i + q.length + 50)); };
       const grp = (title, icon, items) => items.length ? `<div class="lbl" style="margin-top:6px">${title} · ${items.length}</div><div class="set">${items.join('')}</div>` : '';
       res = grp('Görevler ve hatırlatıcılar', 'task', tasks.map(t => `<button data-a="sTask" data-id="${t.id}">${ic(t.kind === 'event' ? 'bell' : 'task', 20)}<span class="sp">${snip(t.title)}<small>${t.date ? U.fmt(t.date, 'full') : ''}${t.time ? ' · ' + t.time : ''}</small></span></button>`))
         + grp('Notlar', 'note', notes.map(n => `<button data-a="sNote" data-id="${n.id}">${ic('note', 20)}<span class="sp">${U.esc(n.title || 'Başlıksız not')}<small>${snip(has(n.title) ? '' : S.noteText(n)) || (n.tags || []).map(t => '#' + t).join(' ')}</small></span></button>`))
         + grp('Günlük ve günler', 'journal', days.map(([k, d]) => `<button data-a="sDay" data-k="${k}">${ic('journal', 20)}<span class="sp">${U.fmt(k, 'long')}<small>${snip([d.best, d.journal, d.note, (d.gratitude || []).join(' · '), (d.learned || []).join(' · ')].find(has))}</small></span></button>`))
         + grp('Alışkanlıklar', 'target', habits.map(h => `<button data-a="go" data-to="habit" data-p='{"id":"${h.id}"}'>${ic('target', 20)}<span class="sp">${snip(h.name)}</span></button>`))
+        + grp('Hedefler', 'flag', goals.map(g => `<button data-a="go" data-to="goal" data-p='{"id":"${g.id}"}'>${ic('flag', 20)}<span class="sp">${snip(g.title)}<small>%${Math.round(S.goalPct(g) * 100)}${g.done ? ' · tamamlandı' : ''}</small></span></button>`))
         + grp('Kitaplar', 'book', books.map(b => `<button data-a="sBook" data-id="${b.id}">${ic('book', 20)}<span class="sp">${snip(b.title)}<small>${U.esc(b.author || '')}</small></span></button>`));
       if (!res) res = `<p class="mu" style="text-align:center;padding:30px 0">"${U.esc(p.q)}" için sonuç bulunamadı.</p>`;
-    } else res = `<p class="mu" style="text-align:center;padding:30px 0;line-height:1.6">Görevler, notlar, günlük sayfaları, alışkanlıklar ve kitaplar arasında arar.</p>`;
+    } else res = `<p class="mu" style="text-align:center;padding:30px 0;line-height:1.6">Görevler, notlar, günlük sayfaları, alışkanlıklar, hedefler ve kitaplar arasında arar.</p>`;
     return `<div class="topbar" style="padding-top:18px"><button class="icbtn box" data-a="back">${ic('back', 20, 1.8)}</button>
       <div class="row card sp" style="padding:2px 12px">${ic('search', 18)}<input class="bare" id="sq" placeholder="Her yerde ara" value="${U.esc(p.q || '')}" style="padding:10px 0;font-size:15px" autocomplete="off"></div></div>
       <div class="wrap pad">${res}</div>`;
