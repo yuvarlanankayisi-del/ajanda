@@ -43,6 +43,7 @@ Screens.search = {
       const habits = S.db.habits.filter(h => has(h.name));
       const books = S.db.books.filter(b => has(b.title) || has(b.author) || has(b.comment));
       const courses = (S.db.courses || []).filter(c => has(c.name) || has(c.note) || (c.topics || []).some(x => has(x.v)));
+      const shows = (S.db.shows || []).filter(x => has(x.title) || has(x.comment) || has(x.platform));
       const goals = (S.db.goals || []).filter(g => has(g.title) || has(g.why) || (g.steps || []).some(x => has(x.v)));
       const snip = s => { s = s || ''; const i = s.toLocaleLowerCase('tr-TR').indexOf(q); if (i < 0) return U.esc(s.slice(0, 80)); const a = Math.max(0, i - 30); return (a ? '…' : '') + U.esc(s.slice(a, i)) + '<b style="color:var(--ac)">' + U.esc(s.slice(i, i + q.length)) + '</b>' + U.esc(s.slice(i + q.length, i + q.length + 50)); };
       const grp = (title, icon, items) => items.length ? `<div class="lbl" style="margin-top:6px">${title} · ${items.length}</div><div class="set">${items.join('')}</div>` : '';
@@ -52,6 +53,7 @@ Screens.search = {
         + grp('Alışkanlıklar', 'target', habits.map(h => `<button data-a="go" data-to="habit" data-p='{"id":"${h.id}"}'>${ic('target', 20)}<span class="sp">${snip(h.name)}</span></button>`))
         + grp('Dersler', 'cap', courses.map(c => `<button data-a="go" data-to="course" data-p='{"id":"${c.id}"}'>${ic('cap', 20)}<span class="sp">${snip(c.name)}<small>${snip(has(c.name) ? '' : [(c.topics || []).map(x => x.v).join(' · '), c.note].find(has))}</small></span></button>`))
         + grp('Hedefler', 'flag', goals.map(g => `<button data-a="go" data-to="goal" data-p='{"id":"${g.id}"}'>${ic('flag', 20)}<span class="sp">${snip(g.title)}<small>%${Math.round(S.goalPct(g) * 100)}${g.done ? ' · tamamlandı' : ''}</small></span></button>`))
+        + grp('Dizi ve filmler', 'film', shows.map(x => `<button data-a="sShow" data-id="${x.id}">${ic('film', 20)}<span class="sp">${snip(x.title)}<small>${x.type === 'series' ? 'Dizi' : 'Film'}${x.platform ? ' · ' + U.esc(x.platform) : ''}</small></span></button>`))
         + grp('Kitaplar', 'book', books.map(b => `<button data-a="sBook" data-id="${b.id}">${ic('book', 20)}<span class="sp">${snip(b.title)}<small>${U.esc(b.author || '')}</small></span></button>`));
       if (!res) res = `<p class="mu" style="text-align:center;padding:30px 0">"${U.esc(p.q)}" için sonuç bulunamadı.</p>`;
     } else res = `<p class="mu" style="text-align:center;padding:30px 0;line-height:1.6">Görevler, notlar, günlük sayfaları, alışkanlıklar, hedefler ve kitaplar arasında arar.</p>`;
@@ -68,6 +70,7 @@ Screens.search = {
     sTask(t) { const x = S.db.tasks.find(y => y.id === t.dataset.id); if (x) App.go('agenda', { k: x.date, view: 'day' }); },
     sNote(t) { App.go('note', { id: t.dataset.id }); },
     sDay(t) { App.go('journal', { k: t.dataset.k }); },
+    sShow(t) { ShowSheet.open((S.db.shows || []).find(x => x.id === t.dataset.id)); },
     sBook(t) { BookSheet.open(S.db.books.find(b => b.id === t.dataset.id)); }
   }
 };
