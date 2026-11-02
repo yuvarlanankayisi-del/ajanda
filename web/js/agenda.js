@@ -63,7 +63,7 @@ Screens.agenda = {
         <button class="icbtn" data-a="shift" data-n="1" aria-label="Sonraki gün">${ic('right', 22, 1.8)}</button>
       </div>
       <div class="card week wk2">${wk}</div>
-      ${k !== tk ? `<button class="btn soft sm" data-a="toToday" style="align-self:center">Bugüne dön</button>` : ''}
+      <div class="row" style="justify-content:center;gap:8px">${k !== tk ? `<button class="btn soft sm" data-a="toToday">Bugüne dön</button>` : ''}<button class="btn soft sm" data-a="go" data-to="page" data-p='{"k":"${k}"}'>${ic('journal', 16)} Defter sayfası</button></div>
 
       <div class="g2" style="gap:10px">
         <section class="card big col" style="padding:14px;gap:10px"><span class="lbl">Ruh hâli</span>

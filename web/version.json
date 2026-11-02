@@ -1,7 +1,7 @@
 {
- "version": 12,
+ "version": 13,
  "date": "02.11.2026",
- "notes": "Notlarda fotoğraf/sticker döndürme ve çift dokunarak yazı ekleme",
+ "notes": "Günlük plan defteri (kâğıt sayfa, yürüyen kedi), yazı kutusu düzeltmesi",
  "files": [
   "css/app.css",
   "img/logo.jpg",
@@ -17,6 +17,7 @@
   "js/misc.js",
   "js/notes.js",
   "js/notify.js",
+  "js/planner.js",
   "js/score.js",
   "js/settings.js",
   "js/store.js",

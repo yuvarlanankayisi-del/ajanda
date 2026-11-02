@@ -171,11 +171,11 @@ Screens.home = {
       </nav>
 
       <div class="g3">
-        <section class="card col" style="gap:6px" aria-label="Bugünün planı">
+        <section class="card col" data-a="go" data-to="page" data-p='{"k":"${tk}"}' style="gap:6px" aria-label="Bugünün planı">
           <div class="ct">${ic('cal', 13, 2)}<h2 style="font-size:14px">Bugünün Planı</h2></div>
           <small class="mu" style="font-size:9.5px;margin-top:-3px">${taskOpen.length ? taskOpen.length + ' görev kaldı' : 'Hepsi tamam'}</small>
           <div class="tl">${plan}</div>
-          <button class="pill" data-a="go" data-to="agenda">Tümünü Gör <span>›</span></button>
+          <button class="pill" data-a="go" data-to="planner">Plan defterim <span>›</span></button>
         </section>
         <section class="card col" data-a="go" data-to="stats" style="gap:5px;align-items:center" aria-label="Hızlı bakış">
           <div class="ct" style="align-self:stretch">${ic('chart', 13, 2)}<h2 style="font-size:14px">Hızlı Bakış</h2></div>

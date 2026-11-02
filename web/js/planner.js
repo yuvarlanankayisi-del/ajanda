@@ -1,0 +1,154 @@
+/* Günlük plan defteri: tarih listesi + kâğıt görünümlü gün sayfası */
+'use strict';
+
+const Planner = {
+  paper() {
+    const v = Theme.cur().v;
+    const paper = Col.mix(v.ac2, '#F7EDE6', 0.9), ink = Col.mix(v.ac2, '#1A0A10', 0.3);
+    return { paper, paper2: Col.mix(ink, paper, 0.93), ink, ink2: Col.mix(ink, paper, 0.38), rule: Col.rgba(ink, 0.3), acc: v.ac2, glow1: v.ac, glow2: v.gold };
+  },
+  vars() { const p = Planner.paper(); return `--pp:${p.paper};--pp2:${p.paper2};--ink:${p.ink};--ink2:${p.ink2};--rule:${p.rule};--pacc:${p.acc};--g1:${p.glow1};--g2:${p.glow2}`; },
+  summary(k) {
+    const ts = S.tasksOn(k), d = S.db.days[k] || {};
+    return { n: ts.length, done: ts.filter(t => S.isDone(t, k)).length, mood: moodOf(d.mood), wrote: !!(d.note || d.best || (d.learned || []).some(Boolean) || Object.values(d.sched || {}).some(Boolean)), spend: (d.expenses || []).reduce((a, e) => a + (+e.a || 0), 0) };
+  }
+};
+
+const CAT_SVG = `<svg class="pcat" viewBox="0 0 64 40" aria-hidden="true"><g fill="#16090D">
+  <path class="tail" d="M14 20 C6 18 3 9 8 3" fill="none" stroke="#16090D" stroke-width="3.2" stroke-linecap="round"/>
+  <ellipse cx="30" cy="22" rx="17" ry="8.5"/>
+  <g class="head"><circle cx="49" cy="15" r="6.8"/><path d="M44.5 11 L45.5 3.5 L49 8.5 Z M50 8.5 L54 3.5 L54.5 11 Z"/><circle cx="51.5" cy="14" r="1.1" fill="#E8C35A"/></g>
+  <path class="leg l1" d="M41 27 L42 37" stroke="#16090D" stroke-width="3.4" stroke-linecap="round"/>
+  <path class="leg l2" d="M37 27 L37 37" stroke="#16090D" stroke-width="3.4" stroke-linecap="round"/>
+  <path class="leg l2" d="M21 27 L20 37" stroke="#16090D" stroke-width="3.4" stroke-linecap="round"/>
+  <path class="leg l1" d="M17 26 L16 37" stroke="#16090D" stroke-width="3.4" stroke-linecap="round"/></g></svg>`;
+
+const ORN = `<svg class="orn" viewBox="0 0 120 12" aria-hidden="true"><path d="M2 6 H48 M72 6 H118" stroke="currentColor" stroke-width=".8"/><path d="M60 1 L62 6 L60 11 L58 6 Z M52 6 L54 4.5 L56 6 L54 7.5 Z M64 6 L66 4.5 L68 6 L66 7.5 Z" fill="currentColor"/></svg>`;
+const FACES = [5, 4, 3, 2, 1].map(v => ({ v, d: v === 5 ? 'M8.5 13.5c1 1.6 2.2 2.3 3.5 2.3s2.5-.7 3.5-2.3' : v === 4 ? 'M9 14c.9.9 1.9 1.3 3 1.3s2.1-.4 3-1.3' : v === 3 ? 'M9 14.5h6' : v === 2 ? 'M9 15.5c.9-.9 1.9-1.3 3-1.3s2.1.4 3 1.3' : 'M8.5 16c1-1.5 2.2-2.2 3.5-2.2s2.5.7 3.5 2.2M8.5 9.5l2 1M15.5 9.5l-2 1' }));
+
+/* ---------- tarih listesi ---------- */
+Screens.planner = {
+  nav: 'agenda',
+  render(p) {
+    const tk = U.today();
+    const ym = p.ym || tk.slice(0, 7); p.ym = ym;
+    const [y, m] = ym.split('-').map(Number);
+    const dim = new Date(y, m, 0).getDate();
+    const days = [];
+    for (let i = dim; i >= 1; i--) { const k = ym + '-' + U.pad(i); if (k <= U.addDays(tk, 7)) days.push(k); }
+    const pv = Planner.vars();
+    return `<div class="topbar" style="padding-top:18px">${App.stack.length > 1 ? `<button class="icbtn box" data-a="back">${ic('back', 20, 1.8)}</button>` : ''}<h1>Günlük Plan Defterim</h1></div>
+    <div class="wrap pad">
+      <button class="pindex today" data-a="plOpen" data-k="${tk}" style="${pv}">
+        <span class="pscript">Bugünün sayfası</span><span class="pdate">${U.fmt(tk, 'long')}</span>${ic('arrowR', 20, 1.6)}</button>
+      <div class="dayhead"><button class="icbtn" data-a="plM" data-n="-1">${ic('left', 22, 1.8)}</button><div><h1 style="font-size:28px">${U.months[m - 1]}</h1><small>${y}</small></div>
+        <button class="icbtn" data-a="plM" data-n="1" ${ym >= tk.slice(0, 7) ? 'disabled style="opacity:.3"' : ''}>${ic('right', 22, 1.8)}</button></div>
+      <div class="col" style="gap:8px">${days.map(k => {
+        const s = Planner.summary(k), d = U.parse(k), fut = k > tk;
+        return `<button class="pindex ${k === tk ? 'cur' : ''}" data-a="plOpen" data-k="${k}" style="${pv};${fut ? 'opacity:.7' : ''}">
+          <span class="pinum">${d.getDate()}</span>
+          <span class="col sp" style="gap:2px;text-align:left"><b style="font-size:14px">${U.days[U.dow(k)]}${k === tk ? ' · Bugün' : ''}</b>
+            <small>${s.n ? `${s.done}/${s.n} iş` : 'Plan yok'}${s.wrote ? ' · notlu' : ''}${s.spend ? ' · ' + s.spend.toLocaleString('tr-TR') + ' ₺' : ''}</small></span>
+          ${s.mood ? `<span class="cdot" style="width:12px;height:12px;background:${s.mood.c}"></span>` : ''}
+          ${s.n ? U.ring(26, 3, s.done / s.n, 'var(--pacc)', null) : ''}</button>`;
+      }).join('')}</div>
+    </div>`;
+  },
+  acts: {
+    plOpen(t) { App.go('page', { k: t.dataset.k }); },
+    plM(t) { const p = App.cur.entry.params; const [y, m] = p.ym.split('-').map(Number); const d = new Date(y, m - 1 + (+t.dataset.n), 1); const n = d.getFullYear() + '-' + U.pad(d.getMonth() + 1); if (n > U.today().slice(0, 7)) return; p.ym = n; App.forceRefresh(); }
+  }
+};
+
+/* ---------- kâğıt gün sayfası ---------- */
+const HOURS = ['06', '08', '10', '12', '14', '16', '18', '20', '22'];
+Screens.page = {
+  nav: 'agenda', noNav: false,
+  render(p) {
+    const k = p.k || U.today(); p.k = k;
+    const d = S.day(k), tk = U.today(), dt = U.parse(k);
+    const tasks = S.tasksOn(k);
+    const water = S.water(), wc = water ? S.habitCount(water, k) : 0, wt = water ? water.target : 8;
+    const exps = d.expenses || [], total = exps.reduce((a, e) => a + (+e.a || 0), 0);
+    const learned = d.learned || ['', '', ''];
+    const sched = d.sched || {};
+    const qi = (Math.floor(U.parse(k).getTime() / 86400000)) % QUOTES.length;
+    const empty = Math.max(0, 7 - tasks.length);
+    const slotOf = t => { const h = +t.time.slice(0, 2); let best = HOURS[0]; for (const x of HOURS) if (+x <= h) best = x; return best; };
+    return `<div class="topbar" style="padding-top:14px;padding-bottom:4px"><button class="icbtn box" data-a="back">${ic('back', 20, 1.8)}</button>
+      <span class="sp"></span><button class="icbtn box" data-a="pgShift" data-n="-1" aria-label="Önceki gün">${ic('left', 20, 1.8)}</button>
+      <button class="icbtn box" data-a="pgShift" data-n="1" aria-label="Sonraki gün">${ic('right', 20, 1.8)}</button></div>
+    <div class="paperwrap" style="${Planner.vars()}">
+     <div class="paper ${p.dir ? 'turn' + p.dir : ''}">
+      <div class="pcatlane">${CAT_SVG}</div>
+      <svg class="pmoon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3a9 9 0 1 0 6 13A7 7 0 1 1 15 3z" fill="currentColor"/></svg>
+      <span class="pstar" style="left:12%;top:76px">✦</span><span class="pstar" style="right:20%;top:96px;font-size:9px">✦</span><span class="pstar" style="left:24%;top:118px;font-size:8px">✦</span>
+      <header class="phead"><div class="pscript big">Günlük Plan</div><div class="psub">HAYAL ET · PLANLA · BAŞAR</div></header>
+      <div class="prow2"><div class="pfield"><span>AY</span><b>${U.months[dt.getMonth()]}</b></div><div class="pfield"><span>TARİH</span><b>${U.pad(dt.getDate())} / ${U.pad(dt.getMonth() + 1)} / ${dt.getFullYear()}</b></div></div>
+      <div class="pday">${U.days[U.dow(k)]}${k === tk ? ' · bugün' : ' · ' + U.rel(k).toLocaleLowerCase('tr-TR')}</div>
+
+      <div class="pgrid">
+        <section class="pbox ptodo"><h3>${ORN}<span>YAPILACAKLAR</span></h3>
+          ${tasks.map(t => { const dn = S.isDone(t, k); return `<div class="pline ${dn ? 'done' : ''}"><button class="pcirc ${dn ? 'on' : ''}" data-a="pgTgl" data-id="${t.id}" aria-label="Tamamla"></button><button class="ptxt" data-a="pgEdit" data-id="${t.id}">${t.time ? `<i>${t.time}</i> ` : ''}${U.esc(t.title)}</button></div>`; }).join('')}
+          ${Array.from({ length: empty }, (_, i) => `<div class="pline"><span class="pcirc"></span><input class="pin" data-new="1" placeholder="${i === 0 && !tasks.length ? 'Yazmak için dokun…' : ''}" enterkeyhint="done"></div>`).join('')}
+          ${empty === 0 ? `<div class="pline"><span class="pcirc"></span><input class="pin" data-new="1" placeholder="+ ekle" enterkeyhint="done"></div>` : ''}
+        </section>
+        <div class="pcol">
+          <section class="pbox"><h3><span>RUH HÂLİ</span></h3><div class="pfaces">${FACES.map(f => `<button data-a="pgMood" data-v="${f.v}" class="${d.mood === f.v ? 'on' : ''}" aria-label="${(moodOf(f.v) || {}).l}"><svg viewBox="0 0 24 24" width="26" height="26"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.3"/><circle cx="9.3" cy="10" r=".9" fill="currentColor"/><circle cx="14.7" cy="10" r=".9" fill="currentColor"/><path d="${f.d}" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button>`).join('')}</div></section>
+          <section class="pbox"><h3><span>SU</span></h3><div class="pcups">${Array.from({ length: wt }, (_, i) => `<button data-a="pgWater" data-n="${i + 1}" class="${i < wc ? 'on' : ''}" aria-label="${i + 1}. bardak"><svg viewBox="0 0 20 24" width="18" height="22"><path d="M3 3h14l-2 18H5z" fill="${i < wc ? 'currentColor' : 'none'}" fill-opacity=".35" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>${i < wc ? '' : '<path d="M8.5 11c1-1.5 2-1.5 3 0" fill="none" stroke="currentColor" stroke-width=".9"/>'}</svg></button>`).join('')}</div></section>
+          <section class="pbox"><h3>${ORN}<span>HARCAMA</span></h3>
+            ${exps.map((e, i) => `<div class="pexp"><span class="sp">${U.esc(e.d || '—')}</span><b>${(+e.a || 0).toLocaleString('tr-TR')} ₺</b><button data-a="pgExpDel" data-i="${i}" aria-label="Sil">×</button></div>`).join('')}
+            <div class="pexp add"><input class="pin" id="exD" placeholder="ne için?"><input class="pin" id="exA" placeholder="₺" inputmode="decimal" style="width:52px;text-align:right" enterkeyhint="done"></div>
+            ${exps.length ? `<div class="pexp tot"><span class="sp">Toplam</span><b>${total.toLocaleString('tr-TR')} ₺</b></div>` : ''}
+          </section>
+        </div>
+        <section class="pbox pnotes"><span class="pseal" aria-hidden="true"><svg viewBox="0 0 40 52"><path d="M14 30 L8 50 L16 45 L20 51 L22 32 Z M26 30 L32 50 L24 45 L20 51 L18 32 Z" fill="var(--pacc)" opacity=".85"/><circle cx="20" cy="20" r="15" fill="var(--pacc)"/><circle cx="20" cy="20" r="11" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1"/><path d="M20 12c1.5 3 4 4 4 7a4 4 0 0 1-8 0c0-3 2.5-4 4-7zM14 25h12" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.2" stroke-linecap="round"/></svg></span>
+          <h3>${ORN}<span>NOTLAR</span></h3><textarea class="pnote grow" rows="6" data-in="pgField" data-f="note" placeholder="Aklındakiler…">${U.esc(d.note || '')}</textarea></section>
+        <section class="pbox psched"><h3><span>PROGRAM</span></h3>
+          ${HOURS.map(h => { const ts = tasks.filter(t => t.time && slotOf(t) === h); return `<div class="pslot"><span>${h}:00</span><div class="sp">${ts.map(t => `<button class="ptag ${S.isDone(t, k) ? 'done' : ''}" data-a="pgEdit" data-id="${t.id}">${t.time} ${U.esc(t.title)}</button>`).join('')}<input class="pin" data-in="pgSched" data-h="${h}" value="${U.esc(sched[h] || '')}"></div></div>`; }).join('')}
+        </section>
+        <section class="pbox plearn"><h3><span>ÖĞRENDİĞİM 3 ŞEY</span></h3>
+          ${[0, 1, 2].map(i => `<div class="pnum"><span>${i + 1}.</span><input class="pin" data-in="pgLearn" data-i="${i}" value="${U.esc(learned[i] || '')}"></div>`).join('')}</section>
+        <div class="pquote">${U.esc(QUOTES[qi])}<span class="pstar" style="position:static;display:block;margin-top:6px">✦</span></div>
+      </div>
+     </div>
+    </div>`;
+  },
+  mount(el, p) {
+    App.growAll(el);
+    delete p.dir;
+    const k = p.k;
+    el.querySelectorAll('input[data-new]').forEach(inp => inp.addEventListener('keydown', e => {
+      if (e.key !== 'Enter' || !inp.value.trim()) return;
+      S.newTask({ title: inp.value.trim(), date: k }); inp.blur(); App.forceRefresh();
+      setTimeout(() => { const n = document.querySelector('input[data-new]'); if (n) n.focus(); }, 60);
+    }));
+    const exA = el.querySelector('#exA'), exD = el.querySelector('#exD');
+    const addExp = () => {
+      const a = parseFloat((exA.value || '').replace(',', '.'));
+      if (!a) return;
+      const dd = S.day(k, true); S.setDay(k, 'expenses', (dd.expenses || []).concat({ d: exD.value.trim(), a, cat: '' }));
+      exA.blur(); App.forceRefresh(); setTimeout(() => { const x = document.getElementById('exD'); if (x) x.focus(); }, 60);
+    };
+    if (exA) { exA.addEventListener('keydown', e => { if (e.key === 'Enter') addExp(); }); exD.addEventListener('keydown', e => { if (e.key === 'Enter') exA.focus(); }); exA.addEventListener('blur', () => { if (exA.value) addExp(); }); }
+    const paper = el.querySelector('.paper');
+    let sx = null, sy = 0;
+    paper.addEventListener('touchstart', e => { if (e.target.closest('input,textarea')) { sx = null; return; } sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+    paper.addEventListener('touchend', e => {
+      if (sx == null) return;
+      const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+      if (Math.abs(dx) > 70 && Math.abs(dy) < 50) Screens.page.acts.pgShift({ dataset: { n: dx < 0 ? 1 : -1 } });
+    }, { passive: true });
+  },
+  acts: {
+    pgShift(t) { const p = App.cur.entry.params; const n = +t.dataset.n; p.k = U.addDays(p.k, n); p.dir = n > 0 ? 'L' : 'R'; App.forceRefresh(); document.getElementById('screen').scrollTop = 0; },
+    pgTgl(t) { const x = S.db.tasks.find(y => y.id === t.dataset.id); if (x) { S.toggle(x, App.cur.params.k); App.forceRefresh(); } },
+    pgEdit(t) { const x = S.db.tasks.find(y => y.id === t.dataset.id); if (x) TaskSheet.open(x); },
+    pgMood(t) { const k = App.cur.params.k, v = +t.dataset.v; S.setDay(k, 'mood', S.day(k).mood === v ? null : v); App.forceRefresh(); },
+    pgWater(t) { const k = App.cur.params.k, n = +t.dataset.n, w = S.water(); if (!w) return; const cur = S.habitCount(w, k); const nv = cur === n ? n - 1 : n; w.log = w.log || {}; if (nv <= 0) delete w.log[k]; else w.log[k] = nv; w.updated = Date.now(); U.vibrate(8); S.touch(); App.forceRefresh(); },
+    pgExpDel(t) { const k = App.cur.params.k; const a = (S.day(k).expenses || []).slice(); a.splice(+t.dataset.i, 1); S.setDay(k, 'expenses', a); App.forceRefresh(); },
+    pgField: U.debounce(t => S.setDay(App.cur.params.k, t.dataset.f, t.value), 500),
+    pgSched: U.debounce(t => { const k = App.cur.params.k; const s = Object.assign({}, S.day(k).sched || {}); s[t.dataset.h] = t.value; S.setDay(k, 'sched', s); }, 500),
+    pgLearn: U.debounce(t => { const k = App.cur.params.k; const a = (S.day(k).learned || ['', '', '']).slice(); a[+t.dataset.i] = t.value; S.setDay(k, 'learned', a); }, 500)
+  }
+};

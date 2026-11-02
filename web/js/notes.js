@@ -237,7 +237,7 @@ Screens.note = {
         if (st.mode === 'wait') {
           const now = Date.now();
           if (Screens.note._lastTap && Screens.note._lastTap.fid === it.fid && now - Screens.note._lastTap.t < 350) {
-            Screens.note._lastTap = null; Screens.note.setSel(it.fid); CaptionBox.open(n, it);
+            Screens.note._lastTap = null; Screens.note.setSel(it.fid); setTimeout(() => CaptionBox.open(n, it), 80);
           } else { Screens.note._lastTap = { fid: it.fid, t: now }; Screens.note.setSel(Screens.note.sel === it.fid ? null : it.fid); }
         }
         else if (st.mode === 'drag' || st.mode === 'resize' || st.mode === 'rotate') {
@@ -358,7 +358,8 @@ const CaptionBox = {
       CaptionBox.cur = null;
     };
     CaptionBox.cur = () => close(null);
-    bg.onclick = () => close(null);
+    const opened = Date.now();
+    bg.onclick = () => { if (Date.now() - opened > 450) close(null); };
     box.querySelectorAll('[data-c]').forEach(b => b.onclick = () => close(b.dataset.c === 'ok' ? ta.value.trim() : b.dataset.c === 'del' ? '' : null));
   }
 };
