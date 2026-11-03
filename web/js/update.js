@@ -26,6 +26,14 @@ const Upd = {
       return false;
     }
   },
+  /* açılışta sessizce denetler; yeni sürüm varsa arka planda indirir, bir sonraki açılışta devreye girer */
+  async auto() {
+    if (Upd.busy || !N) return;
+    Upd.busy = true;
+    try { if (await Upd.check()) { await Upd.apply(); Upd.local = Upd.remote; S.sync.updAuto = Upd.remote.version; S.saveSync(); if (typeof App !== 'undefined') App.updateBadge(false); } }
+    catch (e) { }
+    Upd.busy = false;
+  },
   async apply(progress) {
     if (!N) { location.reload(); return; }
     if (!Upd.remote) await Upd.check();

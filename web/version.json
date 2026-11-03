@@ -1,7 +1,7 @@
 {
- "version": 22,
- "date": "02.11.2026",
- "notes": "Kış açılışı: kar taneleri artık altı kollu kar tanesi şeklinde, bir kısmı sağa sola süzülerek düşüyor",
+ "version": 23,
+ "date": "03.11.2026",
+ "notes": "Güncellemeler artık kendiliğinden iniyor; küçük bir sürpriz 🌸",
  "files": [
   "css/app.css",
   "img/kedi_body.png",
@@ -17,6 +17,7 @@
   "js/habits.js",
   "js/home.js",
   "js/intro.js",
+  "js/intro_mum.js",
   "js/journal.js",
   "js/misc.js",
   "js/notes.js",

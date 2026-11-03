@@ -4,7 +4,11 @@
 const INTROS = { turn: 'Sırayla · bir kış bir sonbahar', season: 'Mevsime göre', winter: 'Kış · kar', autumn: 'Sonbahar · yapraklar', random: 'Her açılışta rastgele', off: 'Kapalı' };
 
 const Intro = {
+  /* tek seferlik özel açılışlar: süresi bitince görünmez, ayarlarda yer almaz */
+  SPECIAL: [{ kind: 'mum', until: new Date(2026, 10, 4, 23, 59, 59).getTime() }],
   pick() {
+    const sp = Intro.SPECIAL.find(x => Date.now() <= x.until);
+    if (sp) return sp.kind;
     const k = S.set.intro || 'turn';
     if (k === 'off') return null;
     if (k === 'turn') {
@@ -33,13 +37,17 @@ const Intro = {
       const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
       const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#140A0E';
       let finished = false;
+      const seenKey = 'seen_' + kind;
       const end = () => {
         if (finished) return; finished = true;
+        if (kind === 'mum') { S.sync[seenKey] = 1; S.saveSync(); }
         wrap.classList.add('out');
         setTimeout(() => { wrap.remove(); done(); }, 450);
       };
-      wrap.addEventListener('click', end);
-      (kind === 'winter' ? Intro.winter : Intro.autumn)(ctx, W, H, bg, brand, end, () => finished);
+      /* özel açılış ilk seferde atlanamaz */
+      if (kind !== 'mum' || S.sync[seenKey]) wrap.addEventListener('click', end);
+      if (kind === 'mum') { brand.remove(); Intro.mum(ctx, W, H, bg, wrap, end, () => finished); }
+      else (kind === 'winter' ? Intro.winter : Intro.autumn)(ctx, W, H, bg, brand, end, () => finished);
     });
   },
 

@@ -35,8 +35,7 @@ const App = {
     setTimeout(App.checkOpen, 350);
     setTimeout(() => {
       Notify.push();
-      const last = S.sync.updChecked || 0;
-      if (Date.now() - last > 6 * 3600000) Upd.check();
+      Upd.auto();
       if (Sync.ready() && Date.now() - (S.sync.last || 0) > 30 * 60000) Sync.push();
     }, 1500);
   },
@@ -55,6 +54,7 @@ const App = {
     if (S.set.lock && S.set.lock.on && App.pausedAt && Date.now() - App.pausedAt > 60000) Lock.show();
     if (App.lastDay !== U.today()) { App.lastDay = U.today(); App.refresh(); }
     Notify.push();
+    if (Date.now() - (S.sync.updChecked || 0) > 3600000) Upd.auto();
   },
 
   /* ---------- alt menü ---------- */
