@@ -5,9 +5,12 @@ const INTROS = { turn: 'Sırayla · bir kış bir sonbahar', season: 'Mevsime g�
 
 const Intro = {
   /* tek seferlik özel açılışlar: süresi bitince görünmez, ayarlarda yer almaz */
-  SPECIAL: [{ kind: 'mum', until: new Date(2026, 10, 4, 23, 59, 59).getTime() }],
+  SPECIAL: [
+    { kind: 'lale', from: new Date(2026, 10, 4, 23, 0, 0).getTime(), until: new Date(2026, 10, 5, 23, 58, 59).getTime() },
+    { kind: 'mum', from: 0, until: new Date(2026, 10, 4, 23, 59, 59).getTime() }
+  ],
   pick() {
-    const sp = Intro.SPECIAL.find(x => Date.now() <= x.until);
+    const now = Date.now(), sp = Intro.SPECIAL.find(x => now >= x.from && now <= x.until);
     if (sp) return sp.kind;
     const k = S.set.intro || 'turn';
     if (k === 'off') return null;
@@ -40,13 +43,13 @@ const Intro = {
       const seenKey = 'seen_' + kind;
       const end = () => {
         if (finished) return; finished = true;
-        if (kind === 'mum') { S.sync[seenKey] = 1; S.saveSync(); }
+        if (Intro.SPECIAL.some(x => x.kind === kind)) { S.sync[seenKey] = 1; S.saveSync(); }
         wrap.classList.add('out');
         setTimeout(() => { wrap.remove(); done(); }, 450);
       };
       /* özel açılış ilk seferde atlanamaz */
-      if (kind !== 'mum' || S.sync[seenKey]) wrap.addEventListener('click', end);
-      if (kind === 'mum') { brand.remove(); Intro.mum(ctx, W, H, bg, wrap, end, () => finished); }
+      if (!Intro.SPECIAL.some(x => x.kind === kind) || S.sync[seenKey]) wrap.addEventListener('click', end);
+      if (Intro[kind] && Intro.SPECIAL.some(x => x.kind === kind)) { brand.remove(); Intro[kind](ctx, W, H, bg, wrap, end, () => finished); }
       else (kind === 'winter' ? Intro.winter : Intro.autumn)(ctx, W, H, bg, brand, end, () => finished);
     });
   },
