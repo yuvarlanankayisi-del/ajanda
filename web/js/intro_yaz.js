@@ -1,5 +1,5 @@
 /* İlkbahar ve yaz açılışları.
-   Yaz: plaj; mayolu bir kadın yürüyerek gelip şezlonga uzanır, yanındaki şemsiye açılır, dalgalar denizden ekrana dolar.
+   Yaz: plaj; mayolu bir kadın yürüyerek gelir, denize bakan şezlonga uzanır, yanındaki şemsiye açılır.
    İlkbahar: çiçek açan ağaç, çayır, kelebekler; biri dalın ucundaki çiçeğe konar, sonra uçup kanatlarıyla ekranı kaplar. */
 'use strict';
 
@@ -14,32 +14,34 @@
   /* ---------- yaz ---------- */
   Intro.summer = function (ctx, W, H, bg, brand, end, isDone) {
     /* zaman çizelgesi (ms) */
-    const T = { walk: 300, stop: 2500, turn: 2550, sit: 2850, sat: 3400, lie: 4100, umb: 4000, umbEnd: 4800, wash: 4900, wave: 5600, cover: 6800, hold: 7400, end: 8300 };
-    const HZ = H * .42, SHORE = H * .6, FEET = H * .87;
-    const k = Math.min(H * .25 / 150, W / 270);
-    const LX = W * .5, SEAT = FEET - 34 * k;
-    const UXp = LX + 74 * k;
+    const T = { walk: 300, stop: 2600, turn: 2650, back: 3050, sit: 3700, arms: 4400, umb: 4300, umbEnd: 5100, brand: 5600, end: 6700 };
+    const HZ = H * .42, SHORE = H * .6, FEET = SHORE + H * .085;
+    const k = Math.min(H * .11 / 150, W / 560);
+    const LX = W * .56, SEAT = FEET - 14 * k;
+    const UXp = LX + 34 * k;
     const gulls = Array.from({ length: 3 }, (_, i) => ({ x: -40 - i * 80, y: H * (.1 + i * .05), s: .8 + Math.random() * .5, v: 50 + Math.random() * 30, ph: Math.random() * 6 }));
     const sparkles = Array.from({ length: 40 }, () => ({ x: Math.random() * W, y: lerp(HZ + 6, SHORE - 10, Math.pow(Math.random(), 1.3)), ph: Math.random() * 6.28, sp: 2 + Math.random() * 4 }));
     const shells = Array.from({ length: 16 }, () => ({ x: Math.random() * W, y: lerp(SHORE + 20, H - 8, Math.random()), r: 1 + Math.random() * 1.6 }));
     const SKIN = '#EBB792', SKIN2 = '#CF9873', SUIT = '#9B1D45', SUIT2 = '#6E1230', HAIR = '#4A2A1C';
 
-    /* ---- şezlong ---- */
-    const lounger = c => {
+    /* ---- şezlong: arkadan görünüş, sırtlık bize dönük, oturağı denize uzanıyor ---- */
+    const loungerBack = c => {
       c.save(); c.lineCap = 'round';
-      const x0 = LX - 84 * k, x1 = LX + 14 * k, bl = 60 * k, bx = x1 + Math.cos(.52) * bl, by = SEAT - Math.sin(.52) * bl;
-      c.strokeStyle = '#B07A4B'; c.lineWidth = 3 * k;
-      [[x0 + 6 * k, SEAT, x0 + 2 * k, FEET], [x1 - 6 * k, SEAT, x1 + 2 * k, FEET], [bx - 8 * k, by + 6 * k, bx + 4 * k, FEET]].forEach(([a, b, cc, d]) => { c.beginPath(); c.moveTo(a, b); c.lineTo(cc, d); c.stroke(); });
-      c.fillStyle = 'rgba(120,80,30,.18)'; c.beginPath(); c.ellipse(LX, FEET + 3, 110 * k, 8 * k, 0, 0, 6.283); c.fill();
-      /* minder: koyu bordo-beyaz çizgili */
-      c.lineWidth = 9 * k;
-      c.strokeStyle = '#F6F0E4'; c.beginPath(); c.moveTo(x0, SEAT); c.lineTo(x1, SEAT); c.lineTo(bx, by); c.stroke();
-      c.lineWidth = 3 * k; c.strokeStyle = '#B23A5E'; c.beginPath(); c.moveTo(x0, SEAT); c.lineTo(x1, SEAT); c.lineTo(bx, by); c.stroke();
+      c.fillStyle = 'rgba(120,80,30,.2)'; c.beginPath(); c.ellipse(LX, FEET + 2 * k, 30 * k, 5 * k, 0, 0, 6.283); c.fill();
+      c.strokeStyle = '#A9744A'; c.lineWidth = 2.4 * k;
+      [[-15, -10, -17, 1], [15, -10, 17, 1], [-11, -22, -12, -16], [11, -22, 12, -16]].forEach(([a, b2, cc, d]) => { c.beginPath(); c.moveTo(LX + a * k, FEET + b2 * k); c.lineTo(LX + cc * k, FEET + d * k); c.stroke(); });
+      const bw = 20 * k, tw = 17 * k, by = FEET - 10 * k, ty = FEET - 44 * k;
+      c.fillStyle = '#F6F0E4'; c.beginPath(); c.moveTo(LX - bw, by); c.lineTo(LX - tw, ty); c.quadraticCurveTo(LX, ty - 3 * k, LX + tw, ty); c.lineTo(LX + bw, by); c.closePath(); c.fill();
+      c.save(); c.clip(); c.fillStyle = '#B23A5E';
+      for (let i = -2; i <= 2; i++) c.fillRect(LX + i * 8 * k - 2 * k, ty - 4 * k, 4 * k, by - ty + 6 * k);
+      c.fillStyle = 'rgba(0,0,0,.12)'; c.fillRect(LX - bw, by - 6 * k, bw * 2, 6 * k);
+      c.restore();
+      c.strokeStyle = '#A9744A'; c.lineWidth = 1.6 * k; c.beginPath(); c.moveTo(LX - bw, by); c.lineTo(LX - tw, ty); c.quadraticCurveTo(LX, ty - 3 * k, LX + tw, ty); c.lineTo(LX + bw, by); c.closePath(); c.stroke();
       c.restore();
     };
     /* ---- şemsiye: o=0 kapalı, o=1 açık ---- */
     const umbrella = (c, o) => {
-      c.save(); c.translate(UXp, FEET - 4 * k); c.rotate(-.1); c.scale(k, k);
+      c.save(); c.translate(UXp, FEET - 2 * k); c.rotate(-.12); c.scale(k * .78, k * .78);
       c.strokeStyle = '#EDE8E0'; c.lineWidth = 3.4; c.lineCap = 'round';
       c.beginPath(); c.moveTo(0, 0); c.lineTo(0, -168); c.stroke();
       const R = lerp(6, 74, o), rim = lerp(-96, -150, o), apex = lerp(-170, -150 - 74 * .55, o), n = 8;
@@ -57,8 +59,6 @@
     };
     /* ---- kadın karakter (yandan görünüş, mayolu, hasır şapkalı) ---- */
     const P_STAND = { t: .04, h: 0, tn: 0, sn: 0, tf: 0, sf: 0, an: .08, fn: .14, af: -.06, ff: 0 };
-    const P_SIT = { t: .06, h: .05, tn: 1.5, sn: .12, tf: 1.45, sf: .05, an: .35, fn: .95, af: .25, ff: .9 };
-    const P_LIE = { t: -1.05, h: .55, tn: 1.57, sn: 1.6, tf: 2.25, sf: .82, an: 1.02, fn: 1.35, af: .9, ff: 1.42 };
     const walkPose = ph => {
       const s = Math.sin(ph);
       const tn = .42 * s, tf = -.42 * s;
@@ -110,33 +110,49 @@
       c.restore();
     };
 
-    const waterGrad = top => {
-      const g = ctx.createLinearGradient(0, top, 0, top + H * 1.1);
-      g.addColorStop(0, '#46CBD8'); g.addColorStop(.35, '#1E9DB8'); g.addColorStop(1, '#0B5F82');
-      return g;
-    };
-    const surf = (x, Y, t, a) => Y + (Math.sin(x * .017 + t / 260) * 15 + Math.sin(x * .043 - t / 170) * 7) * a;
-    const water = (Y, t, a, foam) => {
-      ctx.fillStyle = waterGrad(Y - 20);
-      ctx.beginPath(); ctx.moveTo(0, H + 5);
-      for (let x = 0; x <= W + 8; x += 8) ctx.lineTo(x, surf(x, Y, t, a));
-      ctx.lineTo(W, H + 5); ctx.closePath(); ctx.fill();
-      if (!foam) return;
-      ctx.save(); ctx.lineJoin = 'round';
-      ctx.beginPath(); for (let x = 0; x <= W + 8; x += 8) ctx.lineTo(x, surf(x, Y, t, a) + 10 + 8 * a);
-      ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 8 + 16 * a; ctx.stroke();
-      ctx.beginPath(); for (let x = 0; x <= W + 8; x += 8) ctx.lineTo(x, surf(x, Y, t, a));
-      ctx.strokeStyle = 'rgba(255,255,255,.95)'; ctx.lineWidth = 3 + 5 * a; ctx.stroke();
-      ctx.fillStyle = 'rgba(255,255,255,.8)';
-      for (let i = 0; i < 26; i++) { const x = (i * 97 + t * .05) % W; ctx.beginPath(); ctx.arc(x, surf(x, Y, t, a) + 10 + (i * 37 % 26) * a, (1 + (i % 3)) * (.5 + a * .6), 0, 6.283); ctx.fill(); }
-      ctx.restore();
+    /* ---- kadın, arkadan görünüş: sink 0 ayakta, 1 oturmuş; arms 0 aşağıda, 1 başının arkasında ---- */
+    const womanBack = (c, x, y, sink, arms, sq) => {
+      c.save(); c.translate(x, y); c.scale(k * sq, k); c.lineCap = 'round'; c.lineJoin = 'round';
+      const ty = 1 - .18 * sink;
+      if (sink < .95) {
+        c.strokeStyle = SKIN; c.lineWidth = 9;
+        const l = 80 * (1 - sink);
+        c.beginPath(); c.moveTo(-5, 0); c.lineTo(-6, l); c.moveTo(5, 0); c.lineTo(6, l); c.stroke();
+      }
+      c.scale(1, ty);
+      const sh = [[-13, -42], [13, -42]];
+      const armPts = side => {
+        const [sx, sy] = sh[side < 0 ? 0 : 1];
+        const down = [[sx + side * 3, -19], [sx + side * 3, 3]], up = [[sx + side * 12, -63], [side * 5, -67]];
+        return [[lerp(down[0][0], up[0][0], arms), lerp(down[0][1], up[0][1], arms)], [lerp(down[1][0], up[1][0], arms), lerp(down[1][1], up[1][1], arms)]];
+      };
+      const drawArm = side => {
+        const [sx, sy] = sh[side < 0 ? 0 : 1], [e, h] = armPts(side);
+        c.strokeStyle = SKIN; c.lineWidth = 6.5; c.beginPath(); c.moveTo(sx, sy); c.lineTo(e[0], e[1]); c.stroke();
+        c.lineWidth = 5.5; c.beginPath(); c.moveTo(e[0], e[1]); c.lineTo(h[0], h[1]); c.stroke();
+      };
+      /* sırt: ten, mayonun alt kısmı ve çapraz askılar */
+      c.fillStyle = SKIN; c.beginPath(); c.moveTo(-11, 2); c.lineTo(-14, -42); c.quadraticCurveTo(0, -47, 14, -42); c.lineTo(11, 2); c.closePath(); c.fill();
+      c.fillStyle = SUIT; c.beginPath(); c.moveTo(-12, 5); c.lineTo(-10, -20); c.quadraticCurveTo(0, -17, 10, -20); c.lineTo(12, 5); c.quadraticCurveTo(0, 9, -12, 5); c.closePath(); c.fill();
+      c.strokeStyle = SUIT; c.lineWidth = 2.6; c.beginPath(); c.moveTo(-9, -20); c.lineTo(9, -43); c.moveTo(9, -20); c.lineTo(-9, -43); c.stroke();
+      if (arms < .5) { drawArm(-1); drawArm(1); }
+      /* uzun saç */
+      c.fillStyle = HAIR; c.beginPath(); c.moveTo(-9, -62); c.bezierCurveTo(-12, -46, -11, -34, -7, -27); c.quadraticCurveTo(0, -24, 7, -27); c.bezierCurveTo(11, -34, 12, -46, 9, -62); c.closePath(); c.fill();
+      c.strokeStyle = SKIN; c.lineWidth = 6; c.beginPath(); c.moveTo(0, -44); c.lineTo(0, -52); c.stroke();
+      if (arms >= .5) { drawArm(-1); drawArm(1); }
+      /* baş ve şapka */
+      c.fillStyle = HAIR; c.beginPath(); c.arc(0, -60, 9.5, 0, 6.283); c.fill();
+      c.fillStyle = '#E8C784'; c.beginPath(); c.ellipse(0, -66, 21, 5, 0, 0, 6.283); c.fill();
+      c.beginPath(); c.ellipse(0, -69, 10.5, 8, 0, Math.PI, 0); c.fill();
+      c.strokeStyle = SUIT; c.lineWidth = 2.4; c.beginPath(); c.moveTo(-10.5, -69); c.quadraticCurveTo(0, -67, 10.5, -69); c.stroke();
+      c.restore();
     };
 
     const t0 = performance.now(); let last = t0;
     const frame = now => {
       if (isDone()) return;
       const t = now - t0, dt = Math.min(.05, (now - last) / 1000); last = now;
-      if (t < T.cover) {
+      {
         /* gökyüzü, güneş, martılar */
         const sky = ctx.createLinearGradient(0, 0, 0, HZ);
         sky.addColorStop(0, '#4FAEE3'); sky.addColorStop(.7, '#BDE6F6'); sky.addColorStop(1, '#FFE2B6');
@@ -173,51 +189,37 @@
         ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = 3;
         ctx.beginPath(); for (let x = 0; x <= W + 10; x += 10) ctx.lineTo(x, sh0 + Math.sin(x * .03) * 4); ctx.stroke();
         ctx.fillStyle = 'rgba(180,140,90,.5)'; for (const s of shells) { ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.283); ctx.fill(); }
-        /* ilk küçük dalga kıyıya vurup çekilir */
-        if (t > T.wash && t < T.wave + 400) {
-          const u = (t - T.wash) / (T.wave + 400 - T.wash), wy = SHORE + Math.sin(Math.min(1, u) * Math.PI) * H * .08;
-          ctx.save(); ctx.beginPath(); ctx.rect(0, SHORE - 8, W, H); ctx.clip(); water(wy, t, .25, true); ctx.restore();
-        }
-        /* şezlong ve şemsiye */
-        lounger(ctx);
+        /* şemsiye, kadın, şezlong */
         const uo = back((t - T.umb) / (T.umbEnd - T.umb));
-        if (uo > .3) { ctx.fillStyle = `rgba(120,80,30,${.16 * Math.min(1, uo)})`; ctx.beginPath(); ctx.ellipse(LX + 10 * k, FEET + 4, 80 * k * Math.min(1.1, uo), 9 * k, 0, 0, 6.283); ctx.fill(); }
+        if (uo > .3) { ctx.fillStyle = `rgba(120,80,30,${.14 * Math.min(1, uo)})`; ctx.beginPath(); ctx.ellipse(LX + 6 * k, FEET + 3 * k, 46 * k * Math.min(1.1, uo), 6 * k, 0, 0, 6.283); ctx.fill(); }
         umbrella(ctx, Math.max(0, uo));
-        /* kadın yürüyerek gelir, döner, oturur ve uzanır */
-        if (t > T.walk) {
-          let x, y, P, face = 1;
-          if (t < T.stop) {
-            const u = (t - T.walk) / (T.stop - T.walk), ph = (t - T.walk) / 150;
-            x = lerp(-50 * k, LX, u < .85 ? u / .85 * .93 : .93 + .07 * out((u - .85) / .15)); P = mixP(walkPose(ph), P_STAND, ease((u - .88) / .12));
-            y = FEET - 80 * k - Math.abs(Math.cos(ph)) * 2.2 * k * (1 - ease((u - .88) / .12));
-          } else if (t < T.sit) {
-            const u = ease((t - T.turn) / (T.sit - T.turn));
-            x = LX; y = FEET - 80 * k; P = P_STAND; face = Math.cos(u * Math.PI) || .01;
-            if (Math.abs(face) < .08) face = face < 0 ? -.08 : .08;
-          } else if (t < T.sat) {
-            const u = ease((t - T.sit) / (T.sat - T.sit));
-            x = LX; y = lerp(FEET - 80 * k, SEAT - 4 * k, u); P = mixP(P_STAND, P_SIT, u); face = -1;
-          } else {
-            const u = ease((t - T.sat) / (T.lie - T.sat));
-            x = LX; y = SEAT - 4 * k; P = mixP(P_SIT, P_LIE, u); face = -1;
-          }
-          woman(ctx, x, y, P, face);
+        const SX = LX - 40 * k;
+        let seated = false;
+        if (t > T.walk && t < T.turn) {
+          const u = (t - T.walk) / (T.stop - T.walk), ph = (t - T.walk) / 150, st = ease((u - .88) / .12);
+          const x = lerp(-30 * k, SX, Math.min(1, u < .85 ? u / .85 * .93 : .93 + .07 * out((u - .85) / .15)));
+          woman(ctx, x, FEET - 80 * k - Math.abs(Math.cos(ph)) * 2.2 * k * (1 - st), mixP(walkPose(ph), P_STAND, st), 1);
+        } else if (t >= T.turn && t < T.back) {
+          /* döner: yandan görünüş incelir, arkadan görünüş genişler */
+          const u = (t - T.turn) / (T.back - T.turn);
+          if (u < .5) woman(ctx, SX, FEET - 80 * k, P_STAND, Math.max(.06, 1 - u * 2));
+          else womanBack(ctx, SX, FEET - 80 * k, 0, 0, Math.max(.06, (u - .5) * 2));
+        } else if (t >= T.back) {
+          /* şezlonga geçip oturur, sonra kollarını başının arkasına alır */
+          const u = ease((t - T.back) / (T.sit - T.back));
+          const x = lerp(SX, LX, ease(u * 1.4)), y = lerp(FEET - 80 * k, SEAT, u);
+          womanBack(ctx, x, y, u, ease((t - T.arms) / 700), 1);
+          seated = true;
         }
-        /* büyük dalgalar denizden ekrana doğru gelir */
-        if (t > T.wave) {
-          const u = (t - T.wave) / (T.cover - T.wave);
-          water(lerp(SHORE - 4, -H * .3, Math.pow(ease(u), 1.35)), t, .4 + 1.4 * u, true);
+        loungerBack(ctx);
+        /* sonunda logo görünür */
+        if (t > T.brand) {
+          const d = ease((t - T.brand) / 500);
+          ctx.fillStyle = `rgba(20,30,45,${.28 * d})`; ctx.fillRect(0, 0, W, H);
+          if (!brand.classList.contains('on')) brand.classList.add('on');
         }
-      } else if (t < T.hold + 150) {
-        ctx.fillStyle = waterGrad(-H * .1); ctx.fillRect(0, 0, W, H);
-        if (!brand.classList.contains('on') && t < T.hold) brand.classList.add('on');
-        if (t >= T.hold) brand.classList.remove('on');
-      } else {
-        const p = ease((t - T.hold - 150) / (T.end - T.hold - 150));
-        ctx.clearRect(0, 0, W, H);
-        water(lerp(-H * .12, H * 1.15, p), t, 1.4, true);
-        if (p >= 1) { end(); return; }
       }
+      if (t >= T.end) { end(); return; }
       requestAnimationFrame(frame);
     };
     requestAnimationFrame(frame);
