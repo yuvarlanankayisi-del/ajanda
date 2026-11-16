@@ -1,7 +1,8 @@
 /* Açılış animasyonları: kış (kar birikip ekranı kaplar) ve sonbahar (rüzgârla savrulan yapraklar) */
 'use strict';
 
-const INTROS = { turn: 'Sırayla · bir kış bir sonbahar', season: 'Mevsime göre', winter: 'Kış · kar', autumn: 'Sonbahar · yapraklar', random: 'Her açılışta rastgele', off: 'Kapalı' };
+const INTROS = { turn: 'Sırayla · dört mevsim', season: 'Mevsime göre', spring: 'İlkbahar · kelebekler', summer: 'Yaz · deniz', autumn: 'Sonbahar · yapraklar', winter: 'Kış · kar', random: 'Her açılışta rastgele', off: 'Kapalı' };
+const SEASONS = ['winter', 'spring', 'summer', 'autumn'];
 
 const Intro = {
   /* tek seferlik özel açılışlar: süresi bitince görünmez, ayarlarda yer almaz */
@@ -15,13 +16,13 @@ const Intro = {
     const k = S.set.intro || 'turn';
     if (k === 'off') return null;
     if (k === 'turn') {
-      const nx = S.sync.introLast === 'winter' ? 'autumn' : 'winter';
+      const nx = SEASONS[(SEASONS.indexOf(S.sync.introLast) + 1) % 4];
       S.sync.introLast = nx; S.saveSync(); return nx;
     }
-    if (k === 'winter' || k === 'autumn') return k;
-    if (k === 'random') return Math.random() < 0.5 ? 'winter' : 'autumn';
+    if (SEASONS.includes(k)) return k;
+    if (k === 'random') return SEASONS[Math.random() * 4 | 0];
     const m = new Date().getMonth();
-    return (m === 11 || m <= 2) ? 'winter' : 'autumn';
+    return m === 11 || m <= 1 ? 'winter' : m <= 4 ? 'spring' : m <= 7 ? 'summer' : 'autumn';
   },
 
   play(kind) {
@@ -50,7 +51,7 @@ const Intro = {
       /* özel açılış ilk seferde atlanamaz */
       if (!Intro.SPECIAL.some(x => x.kind === kind) || S.sync[seenKey]) wrap.addEventListener('click', end);
       if (Intro[kind] && Intro.SPECIAL.some(x => x.kind === kind)) { brand.remove(); Intro[kind](ctx, W, H, bg, wrap, end, () => finished); }
-      else (kind === 'winter' ? Intro.winter : Intro.autumn)(ctx, W, H, bg, brand, end, () => finished);
+      else (Intro[kind] || Intro.autumn).call(Intro, ctx, W, H, bg, brand, end, () => finished);
     });
   },
 

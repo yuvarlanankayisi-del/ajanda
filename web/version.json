@@ -1,7 +1,7 @@
 {
- "version": 24,
- "date": "04.11.2026",
- "notes": "Küçük iyileştirmeler",
+ "version": 25,
+ "date": "16.11.2026",
+ "notes": "Yeni açılışlar: ilkbahar (kelebekler) ve yaz (deniz). Sırayla seçiliyse dört mevsim sırayla gelir",
  "files": [
   "css/app.css",
   "img/kedi_body.png",
@@ -19,6 +19,7 @@
   "js/intro.js",
   "js/intro_lale.js",
   "js/intro_mum.js",
+  "js/intro_yaz.js",
   "js/journal.js",
   "js/misc.js",
   "js/notes.js",

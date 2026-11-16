@@ -108,9 +108,9 @@ Screens.settings = {
       });
     },
     pickIntro() {
-      const rec = App.sheet(`<h3>Açılış animasyonu</h3><p class="mu" style="margin:0;font-size:13px">Kışta kar yağıp ekranı kaplar, sonbaharda yapraklar rüzgârla savrulur. "Sırayla" seçiliyse her açılışta biri kış biri sonbahar olur; "Mevsime göre" seçilirse aralık–mart arası kış, diğer aylarda sonbahar gösterilir. Animasyon sırasında ekrana dokunursan atlanır.</p>
+      const rec = App.sheet(`<h3>Açılış animasyonu</h3><p class="mu" style="margin:0;font-size:13px">İlkbaharda kelebekler, yazın deniz, sonbaharda yapraklar, kışın kar. "Sırayla" seçiliyse her açılışta sıradaki mevsim gelir; "Mevsime göre" seçilirse bulunduğun mevsimin animasyonu oynar. Animasyon sırasında ekrana dokunursan atlanır.</p>
         <div class="menu">${Object.entries(INTROS).map(([k, l]) => `<button data-a="inSet" data-k="${k}">${(S.set.intro || 'turn') === k ? `<span class="ac">${ic('check', 20, 2.4)}</span>` : ic('spark', 20)}${l}</button>`).join('')}</div>
-        <div class="row"><button class="btn soft sp" data-a="inPrev" data-k="winter">Kışı izle</button><button class="btn soft sp" data-a="inPrev" data-k="autumn">Sonbaharı izle</button></div>`, {
+        <div class="row"><button class="btn soft sp" data-a="inPrev" data-k="spring">İlkbahar</button><button class="btn soft sp" data-a="inPrev" data-k="summer">Yaz</button></div><div class="row"><button class="btn soft sp" data-a="inPrev" data-k="autumn">Sonbahar</button><button class="btn soft sp" data-a="inPrev" data-k="winter">Kış</button></div><p class="mu" style="margin:0;font-size:12px;text-align:center">Düğmeye basınca o animasyonu izlersin.</p>`, {
         acts: {
           inSet: b => { S.set.intro = b.dataset.k; S.set.updated = Date.now(); S.touch(); App.closeSheet(rec); },
           inPrev: b => { App.closeSheet(rec); setTimeout(() => Intro.play(b.dataset.k), 320); }
