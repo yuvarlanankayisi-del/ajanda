@@ -1,7 +1,7 @@
 {
- "version": 27,
- "date": "16.11.2026",
- "notes": "Yaz açılışı: denize bakan şezlong, dalgasız sakin bitiş",
+ "version": 28,
+ "date": "25.11.2026",
+ "notes": "Küçük iyileştirmeler",
  "files": [
   "css/app.css",
   "img/kedi_body.png",
@@ -17,6 +17,7 @@
   "js/habits.js",
   "js/home.js",
   "js/intro.js",
+  "js/intro_kahve.js",
   "js/intro_lale.js",
   "js/intro_mum.js",
   "js/intro_yaz.js",

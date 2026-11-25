@@ -7,6 +7,7 @@ const SEASONS = ['winter', 'spring', 'summer', 'autumn'];
 const Intro = {
   /* tek seferlik özel açılışlar: süresi bitince görünmez, ayarlarda yer almaz */
   SPECIAL: [
+    { kind: 'coffee', from: 0, until: new Date(2026, 10, 26, 23, 59, 59).getTime(), brand: true },
     { kind: 'lale', from: new Date(2026, 10, 4, 23, 0, 0).getTime(), until: new Date(2026, 10, 5, 23, 58, 59).getTime() },
     { kind: 'mum', from: 0, until: new Date(2026, 10, 4, 23, 59, 59).getTime() }
   ],
@@ -50,7 +51,8 @@ const Intro = {
       };
       /* özel açılış ilk seferde atlanamaz */
       if (!Intro.SPECIAL.some(x => x.kind === kind) || S.sync[seenKey]) wrap.addEventListener('click', end);
-      if (Intro[kind] && Intro.SPECIAL.some(x => x.kind === kind)) { brand.remove(); Intro[kind](ctx, W, H, bg, wrap, end, () => finished); }
+      const spc = Intro.SPECIAL.find(x => x.kind === kind);
+      if (Intro[kind] && spc && !spc.brand) { brand.remove(); Intro[kind](ctx, W, H, bg, wrap, end, () => finished); }
       else (Intro[kind] || Intro.autumn).call(Intro, ctx, W, H, bg, brand, end, () => finished);
     });
   },
